@@ -14,13 +14,7 @@ __pycache__/
 .env
 .env.*
 
-# Archivos temporales
-temp/
-tmp/
 
-# Archivos generados por la API
-uploads/
-reports/
 
 # Logs
 *.log
@@ -38,14 +32,3 @@ Thumbs.db
 # Mypy
 .mypy_cache/
 
-# Ruff
-.ruff_cache/
-
-# Cobertura
-.coverage
-htmlcov/
-
-# Distribución
-build/
-dist/
-*.egg-info/
