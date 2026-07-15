@@ -8,7 +8,7 @@ JPEG_QUALITY = 90
 ELA_BRIGHTNESS = 15
 
 
-def analyze_ela(filepath: Path) -> dict:
+def analyze_ela(filepath: Path, temp_dir: Path) -> dict:
     """
     Realiza Error Level Analysis (ELA).
 
@@ -55,7 +55,7 @@ def analyze_ela(filepath: Path) -> dict:
 
     ela_filename = filepath.stem + "_ela.png"
 
-    ela_path = Path("temp") / ela_filename
+    ela_path = temp_dir / ela_filename
 
     ela_image.save(ela_path)
 

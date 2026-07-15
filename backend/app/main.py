@@ -7,12 +7,12 @@ import uuid
 import os
 from fastapi.staticfiles import StaticFiles
 
-from analysis.exif import analyze_exif
-from analysis.hashes import analyze_hashes
-from analysis.ela import analyze_ela
-from analysis.histogram import analyze_histogram
-from analysis.noise import analyze_noise
-from analysis.compression import analyze_compression
+from app.services.exif import analyze_exif
+from app.services.hashes import analyze_hashes
+from app.services.ela import analyze_ela
+from app.services.histogram import analyze_histogram
+from app.services.noise import analyze_noise
+from app.services.compression import analyze_compression
 
 app = FastAPI(
     title="Image Forensic API",
@@ -36,11 +36,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-UPLOAD_DIR = Path("uploads")
-UPLOAD_DIR.mkdir(exist_ok=True)
-TEMP_DIR = Path("temp")
-TEMP_DIR.mkdir(exist_ok=True)
-app.mount("/temp", StaticFiles(directory="temp"), name="temp")
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+DATA_DIR = BASE_DIR / "data"
+
+UPLOAD_DIR = DATA_DIR / "uploads"
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+TEMP_DIR = DATA_DIR / "temp"
+TEMP_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/temp", StaticFiles(directory=str(TEMP_DIR)), name="temp")
 
 
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".tiff", ".webp"}
@@ -79,7 +82,7 @@ async def analyze_image(file: UploadFile = File(...)):
         hashes = analyze_hashes(filepath)
         print("✅ Hashes:", hashes)
 
-        ela = analyze_ela(filepath)
+        ela = analyze_ela(filepath, TEMP_DIR)
         print("✅ ELA:", ela)
 
         histogram = analyze_histogram(filepath)
