@@ -3,7 +3,7 @@ import { forwardRef, ButtonHTMLAttributes } from "react";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "outline" | "ghost" | "danger";
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "icon";
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(

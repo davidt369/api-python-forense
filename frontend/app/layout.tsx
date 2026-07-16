@@ -26,7 +26,12 @@ export const metadata: Metadata = {
     "evidencia digital",
     "autenticación de imágenes",
   ],
+  icons: {
+    icon: "/logo/logo-afd.png",
+  },
 };
+
+import { ThemeProvider } from "./components/ThemeProvider";
 
 export default function RootLayout({
   children,
@@ -37,9 +42,17 @@ export default function RootLayout({
     <html
       lang="es"
       className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      suppressHydrationWarning
     >
       <body className="min-h-screen bg-background text-foreground">
-        <Providers>{children}</Providers>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Providers>{children}</Providers>
+        </ThemeProvider>
       </body>
     </html>
   );
