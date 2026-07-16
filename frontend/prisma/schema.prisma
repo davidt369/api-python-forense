@@ -2,7 +2,7 @@
 // Cochabamba, Bolivia
 
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../app/generated/prisma"
   previewFeatures = ["driverAdapters"]
 }
