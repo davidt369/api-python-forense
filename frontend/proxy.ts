@@ -14,7 +14,7 @@ const publicPaths = [
 const clientPaths = ["/dashboard"];
 const adminPaths = ["/admin"];
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Allow public paths

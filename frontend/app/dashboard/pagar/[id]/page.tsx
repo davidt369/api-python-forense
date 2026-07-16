@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { UploadCloud, CheckCircle2, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function PagoPage() {
   const { id } = useParams();
@@ -45,7 +46,7 @@ export default function PagoPage() {
       setUploading(true);
       const formData = new FormData();
       formData.append("paymentProof", file);
-      
+
       const res = await fetch(`/api/evidencias/${id}/pago`, {
         method: "POST",
         body: formData,
@@ -127,7 +128,7 @@ export default function PagoPage() {
               </div>
 
               <div className="relative w-56 h-56 bg-white border-2 border-slate-200 rounded-xl p-3 flex items-center justify-center shadow-sm">
-                <img src="/certificados/qr/qr-pago.png" alt="QR de Pago" className="w-full h-full object-contain rounded-lg" />
+                <Image src="/qr-pago/qr-pago.png" alt="QR de Pago" width={224} height={224} className="w-full h-full object-contain rounded-lg" />
               </div>
               <p className="text-xs text-muted-foreground mt-4 text-center">QR estático · Banco Unión · Cuenta AFD Bolivia</p>
             </CardContent>
@@ -161,11 +162,11 @@ export default function PagoPage() {
                         <span className="text-xs text-muted-foreground mt-1">Solo JPG o PNG</span>
                       </>
                     )}
-                    <Input 
-                      id="receipt" 
-                      type="file" 
-                      className="hidden" 
-                      accept="image/*" 
+                    <Input
+                      id="receipt"
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
                       onChange={(e) => {
                         const selected = e.target.files?.[0];
                         if (selected) {
