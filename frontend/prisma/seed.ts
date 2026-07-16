@@ -1,12 +1,14 @@
 import "dotenv/config";
 import { PrismaClient } from "../app/generated/prisma/client";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaLibSql } from "@prisma/adapter-libsql";
+import { createClient } from "@libsql/client";
 import { hashSync } from "bcryptjs";
 
-const url = process.env.DATABASE_URL || "file:./dev.db";
+const url = (process.env.TURSO_DATABASE_URL || process.env.DATABASE_URL || "file:./dev.db") as string;
+const authToken = process.env.TURSO_AUTH_TOKEN;
 
 async function main() {
-  const adapter = new PrismaBetterSqlite3({ url });
+  const adapter = new PrismaLibSql({ url, authToken });
   const prisma = new PrismaClient({ adapter });
 
   console.log("🌱 Iniciando seed de la base de datos...");
