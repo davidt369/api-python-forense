@@ -4,7 +4,7 @@ import { getUserFromRequest } from "@/app/lib/auth";
 import { readFile } from "fs/promises";
 import path from "path";
 
-const baseUrl = process.env.NEXT_PUBLIC_FORENSIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000";
+const baseUrl = process.env.NEXT_PUBLIC_FORENSIC_API_URL?.replace(/\/$/, "") || "https://api-python-forense.onrender.com";
 const FORENSIC_API_URL = `${baseUrl}/analyze`;
 
 export async function POST(
@@ -30,6 +30,13 @@ export async function POST(
       return NextResponse.json(
         { error: "Evidencia no encontrada" },
         { status: 404 }
+      );
+    }
+
+    if (!evidence.imagePath) {
+      return NextResponse.json(
+        { error: "No se encontró una imagen para analizar en esta evidencia." },
+        { status: 400 }
       );
     }
 
@@ -66,7 +73,7 @@ export async function POST(
     } catch (apiError) {
       console.error("⚠️ Error al conectar con API forense externa:", apiError);
       return NextResponse.json(
-        { error: `No se pudo conectar con el servidor de análisis forense. Verifica que la API esté configurada en ${process.env.NEXT_PUBLIC_FORENSIC_API_URL}` },
+        { error: `No se pudo conectar con el servidor de análisis forense. Verifica que la API esté configurada en https://api-python-forense.onrender.com/` },
         { status: 503 }
       );
     }

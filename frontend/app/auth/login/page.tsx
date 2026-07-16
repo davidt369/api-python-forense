@@ -54,10 +54,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 sm:p-8">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-forensic-purple/5 pointer-events-none" />
       
-      <div className="animate-fade-in w-full max-w-md relative">
+      <div className="animate-fade-in w-full max-w-md relative mt-8 sm:mt-0 mb-8 sm:mb-0">
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center p-2 rounded-2xl shadow-lg mb-4 bg-white/5">

@@ -48,9 +48,9 @@ export default function AdminEvidenciasPage() {
   };
 
   return (
-    <div className="animate-fade-in">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card border border-border p-6 rounded-3xl shadow-sm mb-6">
-        <div className="flex items-center gap-4">
+    <div className="animate-fade-in w-full max-w-full">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card border border-border p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-sm mb-6">
+        <div className="flex items-center gap-3 sm:gap-4">
           <div className="bg-primary/10 p-3 rounded-2xl text-primary">
             <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           </div>
@@ -61,11 +61,11 @@ export default function AdminEvidenciasPage() {
         </div>
       </div>
 
-      <div className="bg-card border border-border rounded-xl shadow-sm">
-        <div className="p-5 border-b border-border flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="bg-card border border-border rounded-xl shadow-sm w-full overflow-hidden">
+        <div className="p-4 sm:p-5 border-b border-border flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <h2 className="text-lg font-bold">Listado de Evidencias</h2>
           
-          <div className="flex bg-muted p-1 rounded-md overflow-x-auto max-w-full">
+          <div className="flex bg-muted p-1 rounded-md overflow-x-auto max-w-full w-full lg:w-auto snap-x">
             {["TODAS", "PENDIENTE", "REVISANDO", "TERMINADO"].map(status => (
               <button 
                 key={status}
@@ -83,7 +83,7 @@ export default function AdminEvidenciasPage() {
         ) : evidencias.length === 0 ? (
           <div className="text-center py-10 text-muted-foreground text-sm">No se encontraron casos.</div>
         ) : (
-          <div className="overflow-x-auto p-5">
+          <div className="overflow-x-auto p-4 sm:p-5 w-full">
             <table className="w-full text-left text-sm whitespace-nowrap">
               <thead className="bg-muted/50 border-b border-border text-muted-foreground">
                 <tr>

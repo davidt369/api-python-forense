@@ -47,7 +47,7 @@ export default function ClientDashboard() {
 
   return (
     <PortalLayout>
-      <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-5 shadow-sm w-full overflow-hidden">
         <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
           Mis solicitudes
         </h2>
@@ -59,7 +59,7 @@ export default function ClientDashboard() {
             No tienes solicitudes pendientes.
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-lg border border-border mt-4">
+          <div className="overflow-x-auto w-full max-w-full rounded-lg border border-border mt-4">
             <table className="w-full text-left text-sm whitespace-nowrap">
               <thead className="bg-muted/50 border-b border-border text-muted-foreground">
                 <tr>
@@ -86,7 +86,7 @@ export default function ClientDashboard() {
                           <Button size="sm">Pagar (Bs. {evidence.amount})</Button>
                         </Link>
                       ) : evidence.status === "TERMINADO" ? (
-                        <Link href={`/dashboard/detalle/${evidence.id}`}>
+                        <Link href={`/dashboard/evidencias/${evidence.id}`}>
                           <Button size="sm" variant="outline">Ver resultado</Button>
                         </Link>
                       ) : (
