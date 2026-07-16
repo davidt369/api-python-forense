@@ -231,7 +231,11 @@ export default function AdminEvidenceDetailPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               <div className="bg-muted/50 p-4 rounded-xl">
                 <p className="text-xs text-muted-foreground">Score ELA</p>
-                <p className="text-2xl font-bold">{evidence.analysis.elaScore}</p>
+                <p className="text-2xl font-bold">
+                  {evidence.analysis.elaScore !== null && evidence.analysis.elaScore !== undefined
+                    ? `${Number(evidence.analysis.elaScore).toFixed(2)}%`
+                    : "N/A"}
+                </p>
               </div>
               <div className="bg-muted/50 p-4 rounded-xl">
                 <p className="text-xs text-muted-foreground">Resultado</p>
