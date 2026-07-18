@@ -327,7 +327,8 @@ export const CertificadoPDF = ({ data, logoBase64, qrBase64 }: CertificadoPDFPro
                 { label: "Score ELA (Nivel de Error)", value: `${elaScore.toFixed(2)}%` },
                 { label: "Nivel de Riesgo General", value: riskLevel },
                 { label: "Nivel de Ruido Promedio", value: report.ruidoMedio || "N/A" },
-                { label: "Brillo / Contraste Promedio", value: `${report.brillo || "N/A"} / ${report.contraste || "N/A"}` },
+                { label: "Detección de Objetos", value: report.objetosDetectados || "N/A" },
+                { label: "Análisis Esteganográfico", value: report.esteganografia || "N/A" },
               ]}
             />
           </View>

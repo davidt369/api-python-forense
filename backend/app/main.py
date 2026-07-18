@@ -13,6 +13,8 @@ from app.services.ela import analyze_ela
 from app.services.histogram import analyze_histogram
 from app.services.noise import analyze_noise
 from app.services.compression import analyze_compression
+from app.services.object_detection import analyze_objects
+from app.services.steganography import analyze_steganography
 
 app = FastAPI(
     title="Image Forensic API",
@@ -110,6 +112,14 @@ async def analyze_image(filename: str = Form(...), original_name: str = Form(...
         compression = analyze_compression(filepath)
         print("[OK] Compresión:", compression)
 
+        print("[START] YOLOv8 Detección de Objetos...")
+        objects = analyze_objects(filepath)
+        print("[OK] Objetos:", objects.get("summary", "Done"))
+
+        print("[START] Análisis de Esteganografía...")
+        steganography = analyze_steganography(filepath)
+        print("[OK] Esteganografía:", steganography.get("summary", "Done"))
+
         result = {
             "file": {
                 "original_name": original_name,
@@ -122,6 +132,13 @@ async def analyze_image(filename: str = Form(...), original_name: str = Form(...
             "histogram": histogram,
             "noise": noise,
             "compression": compression,
+            "objects": objects,
+            "steganography": steganography,
+            "executive_summary": {
+                "objects_found": objects.get("summary", ""),
+                "hidden_data": steganography.get("summary", ""),
+                "manipulation_alert": "ALERTA: Posible manipulación detectada en el análisis ELA." if type(ela) is dict and ela.get("possible_manipulation") else "No se detectaron signos evidentes de manipulación estructural a nivel de ruido (ELA)."
+            }
         }
 
         print("[DONE] Resultado final generado exitosamente.")

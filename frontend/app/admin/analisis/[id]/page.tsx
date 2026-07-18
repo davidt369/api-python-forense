@@ -118,12 +118,16 @@ export default function AnalysisView() {
   let hashesData: any = null;
   let histogramData: any = null;
   let compressionData: any = null;
+  let objectsData: any = null;
+  let steganographyData: any = null;
 
   if (hasAnalysis) {
     try { exifData = JSON.parse(evidence.analysis.exifData); } catch (e) { }
     try { hashesData = JSON.parse(evidence.analysis.hashesData); } catch (e) { }
     try { histogramData = JSON.parse(evidence.analysis.histogramData); } catch (e) { }
     try { compressionData = JSON.parse(evidence.analysis.compressionData); } catch (e) { }
+    try { objectsData = JSON.parse(evidence.analysis.objectsData); } catch (e) { }
+    try { steganographyData = JSON.parse(evidence.analysis.steganographyData); } catch (e) { }
   }
 
   const getRiskLevel = (score: number) => {
@@ -262,6 +266,8 @@ export default function AnalysisView() {
                 <TabsTrigger value="exif" className="flex items-center gap-2"><Camera className="size-4" /> EXIF</TabsTrigger>
                 <TabsTrigger value="hashes" className="flex items-center gap-2"><Fingerprint className="size-4" /> Hashes</TabsTrigger>
                 <TabsTrigger value="compresion" className="flex items-center gap-2"><Layers className="size-4" /> Compresión</TabsTrigger>
+                <TabsTrigger value="objetos" className="flex items-center gap-2"><Target className="size-4" /> Objetos</TabsTrigger>
+                <TabsTrigger value="esteganografia" className="flex items-center gap-2"><Shield className="size-4" /> Esteganografía</TabsTrigger>
               </TabsList>
 
               <TabsContent value="resumen" className="flex flex-col gap-6 m-0">
@@ -499,6 +505,59 @@ export default function AnalysisView() {
                       <div className="bg-muted/30 border border-border/50 p-4 rounded-xl flex flex-col gap-1"><p className="text-xs text-muted-foreground">Tamaño en Disco</p><p className="font-medium text-sm">{compressionData.size_bytes?.toLocaleString() || "N/D"} bytes</p></div>
                       <div className="bg-muted/30 border border-border/50 p-4 rounded-xl flex flex-col gap-1"><p className="text-xs text-muted-foreground">¿Es Progresivo?</p><p className="font-medium text-sm">{compressionData.compression?.progressive ? "Sí" : "No"}</p></div>
                       <div className="bg-muted/30 border border-border/50 p-4 rounded-xl flex flex-col gap-1"><p className="text-xs text-muted-foreground">Optimizado</p><p className="font-medium text-sm">{compressionData.compression?.optimize ? "Sí" : "No"}</p></div>
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+
+              <TabsContent value="objetos" className="flex flex-col gap-6 m-0">
+                {objectsData && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-lg"><Target className="text-primary size-5" /> Detección de Objetos (YOLOv8)</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex flex-col gap-4">
+                      <div className="bg-muted/30 border border-border/50 p-4 rounded-xl">
+                        <p className="font-medium">{objectsData.summary}</p>
+                      </div>
+                      
+                      {objectsData.counts && Object.keys(objectsData.counts).length > 0 && (
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
+                          {Object.entries(objectsData.counts).map(([obj, count]) => (
+                            <div key={obj} className="bg-muted/30 border border-border/50 p-4 rounded-xl flex flex-col gap-1 items-center justify-center">
+                              <p className="text-xs text-muted-foreground uppercase">{obj}</p>
+                              <p className="font-medium text-2xl">{String(count)}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+
+              <TabsContent value="esteganografia" className="flex flex-col gap-6 m-0">
+                {steganographyData && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-lg">
+                        <Shield className={`size-5 ${steganographyData.lsb?.anomalies ? 'text-destructive' : 'text-primary'}`} /> 
+                        Análisis de Esteganografía LSB
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex flex-col gap-4">
+                      <div className={`p-4 rounded-xl border ${steganographyData.lsb?.anomalies ? 'bg-destructive/10 border-destructive/20 text-destructive' : 'bg-muted/30 border-border/50'}`}>
+                        <p className="font-medium">{steganographyData.summary || (steganographyData.lsb?.anomalies ? "Posibles datos ocultos detectados." : "Sin anomalías evidentes.")}</p>
+                      </div>
+
+                      {steganographyData.text?.extracted && steganographyData.text.extracted.length > 0 && (
+                        <div className="mt-2">
+                          <h4 className="text-sm font-semibold mb-2">Posible texto extraído:</h4>
+                          <div className="bg-muted border border-border/50 p-3 rounded-lg max-h-40 overflow-y-auto">
+                            <pre className="text-xs font-mono whitespace-pre-wrap">{steganographyData.text.extracted.join("\n")}</pre>
+                          </div>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 )}

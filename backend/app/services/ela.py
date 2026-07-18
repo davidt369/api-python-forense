@@ -54,11 +54,22 @@ def analyze_ela(filepath: Path, temp_dir: Path) -> dict:
         min_value = int(np.min(ela_array))
         max_value = int(np.max(ela_array))
 
-        # Calcular score como porcentaje
+        # Calcular score global como porcentaje
         score = round((mean_value / 255.0) * 100, 2)
+        std_score = round((std_value / 255.0) * 100, 2)
         
-        # Si el error medio supera el 18%, es muy sospechoso de manipulación / alta compresión
-        suspicious = score > 18.0
+        # Heurística mejorada para imágenes reales:
+        # Las fotos reales tomadas con celular suelen tener mucho ruido y texturas, lo que eleva el ELA score natural (incluso a 50%).
+        # Un fotomontaje real se detecta mejor por la *Desviación Estándar* (std), ya que un parche insertado creará asimetría (zonas muy brillantes vs zonas oscuras).
+        
+        suspicious = False
+        
+        # 1. Si hay una asimetría gigante en el mapa de error (parches discordantes)
+        if std_score > 35.0:
+            suspicious = True
+        # 2. Si el error medio es brutalmente alto (imagen destruida por compresión repetida)
+        elif score > 65.0:
+            suspicious = True
 
         ela_filename = filepath.stem + "_ela.png"
         ela_path = temp_dir / ela_filename

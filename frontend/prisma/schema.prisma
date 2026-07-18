@@ -71,6 +71,8 @@ model AnalysisResult {
   hashesData    String?  // JSON
   compressionData String? // JSON
   noiseData     String?  // JSON
+  objectsData   String?  // JSON
+  steganographyData String? // JSON
   forensicReport String?  // Texto del dictamen
   analyzedBy    String?
   createdAt     DateTime @default(now())

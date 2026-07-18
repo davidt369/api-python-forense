@@ -9,3 +9,5 @@ requests
 pytest
 pytest-asyncio
 httpx
+ultralytics
+stegano
