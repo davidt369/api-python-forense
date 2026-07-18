@@ -6,3 +6,6 @@ opencv-python-headless
 imagehash
 python-multipart
 requests
+pytest
+pytest-asyncio
+httpx

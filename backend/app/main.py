@@ -69,7 +69,7 @@ async def upload_file(file: UploadFile = File(...), folder: str = Form("evidenci
     target_dir.mkdir(parents=True, exist_ok=True)
     filepath = target_dir / filename
 
-    print(f"💾 Guardando archivo permanentemente: {filepath}")
+    print(f"[SAVE] Guardando archivo permanentemente: {filepath}")
 
     with open(filepath, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
@@ -83,32 +83,32 @@ async def upload_file(file: UploadFile = File(...), folder: str = Form("evidenci
 @app.post("/analyze")
 async def analyze_image(filename: str = Form(...), original_name: str = Form(...)):
 
-    print(f"📥 Solicitud de análisis para: {filename}")
+    print(f"[REQ] Solicitud de análisis para: {filename}")
     filepath = UPLOAD_DIR / filename
 
     if not filepath.exists():
         raise HTTPException(status_code=404, detail="El archivo especificado no existe.")
 
     try:
-        print("🔍 Iniciando análisis forense...")
+        print("[START] Iniciando análisis forense...")
 
         exif = analyze_exif(filepath)
-        print("✅ EXIF:", exif)
+        print("[OK] EXIF:", exif)
 
         hashes = analyze_hashes(filepath)
-        print("✅ Hashes:", hashes)
+        print("[OK] Hashes:", hashes)
 
         ela = analyze_ela(filepath, TEMP_DIR)
-        print("✅ ELA:", ela)
+        print("[OK] ELA:", ela)
 
         histogram = analyze_histogram(filepath)
-        print("✅ Histograma:", histogram)
+        print("[OK] Histograma:", histogram)
 
         noise = analyze_noise(filepath)
-        print("✅ Ruido:", noise)
+        print("[OK] Ruido:", noise)
 
         compression = analyze_compression(filepath)
-        print("✅ Compresión:", compression)
+        print("[OK] Compresión:", compression)
 
         result = {
             "file": {
@@ -124,9 +124,9 @@ async def analyze_image(filename: str = Form(...), original_name: str = Form(...
             "compression": compression,
         }
 
-        print("📊 Resultado final generado exitosamente.")
+        print("[DONE] Resultado final generado exitosamente.")
         return JSONResponse(result)
 
     except Exception as e:
-        print(f"❌ Error durante el análisis: {e}")
+        print(f"[ERR] Error durante el análisis: {e}")
         raise HTTPException(status_code=500, detail=f"Error interno en análisis: {str(e)}")

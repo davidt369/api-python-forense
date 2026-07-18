@@ -98,6 +98,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validar tamaño (máximo 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      return NextResponse.json(
+        { error: "La imagen es demasiado grande. Máximo 5MB permitidos." },
+        { status: 413 }
+      );
+    }
+
     // Guardar imagen enviándola al backend
     const baseUrl = process.env.NEXT_PUBLIC_FORENSIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000";
     const UPLOAD_API_URL = `${baseUrl}/upload`;
