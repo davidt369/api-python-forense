@@ -1,5 +1,6 @@
 from pathlib import Path
 import hashlib
+import gc
 
 from PIL import Image
 import imagehash
@@ -9,18 +10,13 @@ def calculate_hash(filepath: Path, algorithm: str) -> str:
     """
     Calcula un hash criptográfico del archivo.
     """
-
     hash_object = hashlib.new(algorithm)
 
     with open(filepath, "rb") as file:
-
         while True:
-
             chunk = file.read(8192)
-
             if not chunk:
                 break
-
             hash_object.update(chunk)
 
     return hash_object.hexdigest()
@@ -30,6 +26,7 @@ def analyze_hashes(filepath: Path) -> dict:
     """
     Calcula hashes criptográficos y perceptuales.
     """
+    image = None
     try:
         image = Image.open(filepath)
 
@@ -50,8 +47,14 @@ def analyze_hashes(filepath: Path) -> dict:
         }
 
         return result
+
     except Exception as e:
         return {
             "success": False,
             "error": f"Error al calcular hashes: {str(e)}"
         }
+    finally:
+        if image is not None:
+            image.close()
+            del image
+        gc.collect()

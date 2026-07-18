@@ -3,9 +3,13 @@ from PIL import Image, ImageChops, ImageEnhance
 import numpy as np
 import tempfile
 import os
+import gc
 
 JPEG_QUALITY = 90
 ELA_BRIGHTNESS = 15
+
+# Límite de tamaño máximo para evitar imágenes enormes en RAM
+MAX_DIMENSION = 1920
 
 
 def analyze_ela(filepath: Path, temp_dir: Path) -> dict:
@@ -17,10 +21,19 @@ def analyze_ela(filepath: Path, temp_dir: Path) -> dict:
         - score (porcentaje)
         - imagen ela temporal
     """
+    image = None
+    compressed = None
+    ela_image = None
+    ela_array = None
+
     try:
         image = Image.open(filepath)
-        
-        # Handle transparency to avoid black backgrounds or errors when converting to RGB
+
+        # Redimensionar si es muy grande para ahorrar RAM
+        if max(image.size) > MAX_DIMENSION:
+            image.thumbnail((MAX_DIMENSION, MAX_DIMENSION), Image.LANCZOS)
+
+        # Handle transparency
         if image.mode in ('RGBA', 'LA') or (image.mode == 'P' and 'transparency' in image.info):
             alpha = image.convert('RGBA').split()[-1]
             bg = Image.new("RGB", image.size, (255, 255, 255))
@@ -36,8 +49,15 @@ def analyze_ela(filepath: Path, temp_dir: Path) -> dict:
         image.save(temp_path, "JPEG", quality=JPEG_QUALITY)
 
         compressed = Image.open(temp_path)
+        compressed.load()  # Forzar carga para poder cerrar el archivo
 
         ela_image = ImageChops.difference(image, compressed)
+
+        # Liberar compressed de memoria
+        compressed.close()
+        del compressed
+        compressed = None
+
         extrema = ela_image.getextrema()
         max_difference = max(value[1] for value in extrema)
 
@@ -54,20 +74,12 @@ def analyze_ela(filepath: Path, temp_dir: Path) -> dict:
         min_value = int(np.min(ela_array))
         max_value = int(np.max(ela_array))
 
-        # Calcular score global como porcentaje
         score = round((mean_value / 255.0) * 100, 2)
         std_score = round((std_value / 255.0) * 100, 2)
-        
-        # Heurística mejorada para imágenes reales:
-        # Las fotos reales tomadas con celular suelen tener mucho ruido y texturas, lo que eleva el ELA score natural (incluso a 50%).
-        # Un fotomontaje real se detecta mejor por la *Desviación Estándar* (std), ya que un parche insertado creará asimetría (zonas muy brillantes vs zonas oscuras).
-        
+
         suspicious = False
-        
-        # 1. Si hay una asimetría gigante en el mapa de error (parches discordantes)
         if std_score > 35.0:
             suspicious = True
-        # 2. Si el error medio es brutalmente alto (imagen destruida por compresión repetida)
         elif score > 65.0:
             suspicious = True
 
@@ -95,3 +107,17 @@ def analyze_ela(filepath: Path, temp_dir: Path) -> dict:
             "success": False,
             "error": f"Error al procesar ELA: {str(e)}"
         }
+    finally:
+        # Liberar toda la memoria usada
+        if ela_array is not None:
+            del ela_array
+        if ela_image is not None:
+            ela_image.close()
+            del ela_image
+        if compressed is not None:
+            compressed.close()
+            del compressed
+        if image is not None:
+            image.close()
+            del image
+        gc.collect()

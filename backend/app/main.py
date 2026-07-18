@@ -5,6 +5,7 @@ from pathlib import Path
 import shutil
 import uuid
 import os
+import gc
 from fastapi.staticfiles import StaticFiles
 
 from app.services.exif import analyze_exif
@@ -54,6 +55,19 @@ app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".tiff", ".webp"}
 
 
+def _cleanup_temp_dir():
+    """Elimina archivos ELA temporales anteriores al arrancar."""
+    try:
+        for f in TEMP_DIR.glob("*_ela.png"):
+            f.unlink(missing_ok=True)
+    except Exception:
+        pass
+
+
+# Limpiar temporales al arrancar
+_cleanup_temp_dir()
+
+
 @app.get("/")
 def root():
     return {"message": "Image Forensic API", "status": "running"}
@@ -95,26 +109,29 @@ async def analyze_image(filename: str = Form(...), original_name: str = Form(...
         print("[START] Iniciando análisis forense...")
 
         exif = analyze_exif(filepath)
-        print("[OK] EXIF:", exif)
+        print("[OK] EXIF listo")
 
         hashes = analyze_hashes(filepath)
-        print("[OK] Hashes:", hashes)
+        print("[OK] Hashes listos")
 
         ela = analyze_ela(filepath, TEMP_DIR)
-        print("[OK] ELA:", ela)
+        print("[OK] ELA listo")
 
         histogram = analyze_histogram(filepath)
-        print("[OK] Histograma:", histogram)
+        print("[OK] Histograma listo")
 
         noise = analyze_noise(filepath)
-        print("[OK] Ruido:", noise)
+        print("[OK] Ruido listo")
 
         compression = analyze_compression(filepath)
-        print("[OK] Compresión:", compression)
+        print("[OK] Compresión lista")
 
         print("[START] YOLOv8 Detección de Objetos...")
         objects = analyze_objects(filepath)
         print("[OK] Objetos:", objects.get("summary", "Done"))
+
+        # GC explícito antes de la esteganografía (la más costosa después de YOLO)
+        gc.collect()
 
         print("[START] Análisis de Esteganografía...")
         steganography = analyze_steganography(filepath)
@@ -137,7 +154,11 @@ async def analyze_image(filename: str = Form(...), original_name: str = Form(...
             "executive_summary": {
                 "objects_found": objects.get("summary", ""),
                 "hidden_data": steganography.get("summary", ""),
-                "manipulation_alert": "ALERTA: Posible manipulación detectada en el análisis ELA." if type(ela) is dict and ela.get("possible_manipulation") else "No se detectaron signos evidentes de manipulación estructural a nivel de ruido (ELA)."
+                "manipulation_alert": (
+                    "ALERTA: Posible manipulación detectada en el análisis ELA."
+                    if type(ela) is dict and ela.get("possible_manipulation")
+                    else "No se detectaron signos evidentes de manipulación estructural a nivel de ruido (ELA)."
+                )
             }
         }
 
@@ -147,3 +168,6 @@ async def analyze_image(filename: str = Form(...), original_name: str = Form(...
     except Exception as e:
         print(f"[ERR] Error durante el análisis: {e}")
         raise HTTPException(status_code=500, detail=f"Error interno en análisis: {str(e)}")
+    finally:
+        # GC explícito al terminar cada análisis completo
+        gc.collect()

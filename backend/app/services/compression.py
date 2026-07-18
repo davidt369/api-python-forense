@@ -1,6 +1,7 @@
 from pathlib import Path
 from PIL import Image
 import os
+import gc
 
 
 def analyze_compression(filepath: Path) -> dict:
@@ -11,6 +12,7 @@ def analyze_compression(filepath: Path) -> dict:
     La calidad JPEG original no puede recuperarse exactamente una vez
     que la imagen ha sido guardada. Solo puede estimarse.
     """
+    image = None
     try:
         image = Image.open(filepath)
 
@@ -29,31 +31,30 @@ def analyze_compression(filepath: Path) -> dict:
 
         # JPEG
         if image.format == "JPEG":
-
             result["compression"]["progressive"] = bool(
                 image.info.get("progressive", False)
             )
-
             result["compression"]["optimize"] = bool(image.info.get("optimize", False))
-
             result["compression"]["jfif"] = image.info.get("jfif")
-
             result["compression"]["jfif_version"] = image.info.get("jfif_version")
-
             result["compression"]["dpi"] = image.info.get("dpi")
-
             result["compression"]["subsampling"] = (
                 image.layer if hasattr(image, "layer") else None
             )
-
             result["compression"]["quality_estimation"] = (
                 "No es posible determinar la calidad JPEG exacta "
                 "a partir de una imagen ya guardada."
             )
 
         return result
+
     except Exception as e:
         return {
             "success": False,
             "error": f"Error al analizar compresión: {str(e)}"
         }
+    finally:
+        if image is not None:
+            image.close()
+            del image
+        gc.collect()
