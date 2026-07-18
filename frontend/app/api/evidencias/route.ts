@@ -107,8 +107,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Guardar imagen enviándola al backend
-    const baseUrl = process.env.NEXT_PUBLIC_FORENSIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000";
-    const UPLOAD_API_URL = `${baseUrl}/upload`;
+    const baseUrl = process.env.NODE_ENV === "production"
+  ? "https://api-python-forense.onrender.com"
+  : (process.env.NEXT_PUBLIC_FORENSIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000");
+const UPLOAD_API_URL = `${baseUrl}/upload`;
 
     const backendFormData = new FormData();
     backendFormData.append("file", file, file.name);

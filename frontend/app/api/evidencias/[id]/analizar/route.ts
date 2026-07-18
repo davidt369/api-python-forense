@@ -4,7 +4,9 @@ import { getUserFromRequest } from "@/app/lib/auth";
 import { readFile } from "fs/promises";
 import path from "path";
 
-const baseUrl = process.env.NEXT_PUBLIC_FORENSIC_API_URL?.replace(/\/$/, "") || "https://api-python-forense.onrender.com";
+const baseUrl = process.env.NODE_ENV === "production"
+  ? "https://api-python-forense.onrender.com"
+  : (process.env.NEXT_PUBLIC_FORENSIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000");
 const FORENSIC_API_URL = `${baseUrl}/analyze`;
 
 export async function POST(
