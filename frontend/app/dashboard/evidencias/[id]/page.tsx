@@ -117,11 +117,13 @@ export default function EvidenceDetailPage() {
             <Card>
               <CardContent className="p-2">
                 {evidence.imagePath ? (
-                  <img
-                    src={evidence.imagePath}
-                    alt={evidence.originalName}
-                    className="w-full rounded-xl object-contain max-h-80"
-                  />
+                  <div className="bg-muted rounded-xl overflow-hidden flex items-center justify-center p-4">
+                    <img
+                      src={evidence.imagePath?.replace("http://localhost:8000", process.env.NEXT_PUBLIC_FORENSIC_API_URL?.replace(/\/$/, "") || "https://api-python-forense.onrender.com")}
+                      alt={evidence.originalName}
+                      className="max-h-[400px] object-contain rounded-lg"
+                    />
+                  </div>
                 ) : (
                   <div className="aspect-square flex items-center justify-center bg-muted rounded-xl">
                     <ImageIcon className="w-16 h-16 text-muted-foreground" />

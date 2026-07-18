@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft, Shield, FileText, Eye, Activity,
   CheckCircle2, AlertTriangle, QrCode, Download,
-  ImageIcon, Zap, Clock
+  ImageIcon, Zap, Clock, Search, Lock
 } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
@@ -21,13 +21,38 @@ export default function AdminEvidenceDetailPage() {
   const [activeTab, setActiveTab] = useState("resumen");
 
   let reportData: any = null;
-  if (evidence?.analysis?.forensicReport) {
-    try {
-      reportData = typeof evidence.analysis.forensicReport === "string"
-        ? JSON.parse(evidence.analysis.forensicReport)
-        : evidence.analysis.forensicReport;
-    } catch (e) {
-      console.error("Error parsing forensic report:", e);
+  let objectsData: any = null;
+  let steganographyData: any = null;
+
+  if (evidence?.analysis) {
+    if (evidence.analysis.forensicReport) {
+      try {
+        reportData = typeof evidence.analysis.forensicReport === "string"
+          ? JSON.parse(evidence.analysis.forensicReport)
+          : evidence.analysis.forensicReport;
+      } catch (e) {
+        console.error("Error parsing forensic report:", e);
+      }
+    }
+    
+    if (evidence.analysis.objectsData) {
+      try {
+        objectsData = typeof evidence.analysis.objectsData === "string"
+          ? JSON.parse(evidence.analysis.objectsData)
+          : evidence.analysis.objectsData;
+      } catch (e) {
+        console.error("Error parsing objects data:", e);
+      }
+    }
+
+    if (evidence.analysis.steganographyData) {
+      try {
+        steganographyData = typeof evidence.analysis.steganographyData === "string"
+          ? JSON.parse(evidence.analysis.steganographyData)
+          : evidence.analysis.steganographyData;
+      } catch (e) {
+        console.error("Error parsing steganography data:", e);
+      }
     }
   }
 
@@ -136,7 +161,7 @@ export default function AdminEvidenceDetailPage() {
         <Card>
           <CardContent className="p-2">
             <img
-              src={evidence.imagePath}
+              src={evidence.imagePath?.replace("http://localhost:8000", process.env.NEXT_PUBLIC_FORENSIC_API_URL?.replace(/\/$/, "") || "https://api-python-forense.onrender.com")}
               alt={evidence.originalName}
               className="w-full rounded-xl object-contain max-h-80"
             />
@@ -310,6 +335,20 @@ export default function AdminEvidenceDetailPage() {
                          ) : null)}
                        </div>
                     </div>
+
+                    {objectsData && (
+                      <div className="bg-muted/30 p-4 rounded-xl border border-muted">
+                        <h3 className="font-semibold text-sm mb-2 flex items-center gap-2"><Search className="w-4 h-4 text-primary" /> Detección de Objetos (YOLOv8)</h3>
+                        <p className="text-sm text-muted-foreground leading-relaxed">{objectsData.summary || "Sin objetos detectados"}</p>
+                      </div>
+                    )}
+
+                    {steganographyData && (
+                      <div className="bg-muted/30 p-4 rounded-xl border border-muted">
+                        <h3 className="font-semibold text-sm mb-2 flex items-center gap-2"><Lock className="w-4 h-4 text-primary" /> Esteganografía</h3>
+                        <p className="text-sm text-muted-foreground leading-relaxed">{steganographyData.summary || "No se detectó información oculta"}</p>
+                      </div>
+                    )}
                   </div>
                 )}
 

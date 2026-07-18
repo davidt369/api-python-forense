@@ -222,8 +222,9 @@ export default function AnalysisView() {
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-6">
-              <div className="border border-border rounded-2xl overflow-hidden bg-muted/30 flex items-center justify-center p-2 min-h-[250px]">
-                <img src={evidence.imagePath} alt="Evidencia original" className="max-w-full h-auto object-contain rounded-xl shadow-sm max-h-72" />
+              <div className="space-y-4">
+                <h3 className="font-semibold text-sm flex items-center gap-2"><ImageIcon className="w-4 h-4 text-primary" /> Imagen Original</h3>
+                <img src={evidence.imagePath?.replace("http://localhost:8000", process.env.NEXT_PUBLIC_FORENSIC_API_URL?.replace(/\/$/, "") || "https://api-python-forense.onrender.com")} alt="Evidencia original" className="max-w-full h-auto object-contain rounded-xl shadow-sm max-h-72" />
               </div>
 
               <div className="flex flex-col gap-3 text-sm">
