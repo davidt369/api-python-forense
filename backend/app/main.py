@@ -6,6 +6,7 @@ import shutil
 import uuid
 import os
 import gc
+import tempfile
 from fastapi.staticfiles import StaticFiles
 
 from app.services.exif import analyze_exif
@@ -51,7 +52,6 @@ TEMP_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/temp", StaticFiles(directory=str(TEMP_DIR)), name="temp")
 app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 
-
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".tiff", ".webp"}
 
 
@@ -64,8 +64,45 @@ def _cleanup_temp_dir():
         pass
 
 
-# Limpiar temporales al arrancar
 _cleanup_temp_dir()
+
+
+def _run_analysis(filepath: Path, original_name: str, saved_name: str) -> dict:
+    """Ejecuta todos los módulos de análisis forense sobre un archivo."""
+    exif = analyze_exif(filepath)
+    hashes = analyze_hashes(filepath)
+    ela = analyze_ela(filepath, TEMP_DIR)
+    histogram = analyze_histogram(filepath)
+    noise = analyze_noise(filepath)
+    compression = analyze_compression(filepath)
+    objects = analyze_objects(filepath)
+    gc.collect()
+    steganography = analyze_steganography(filepath)
+
+    return {
+        "file": {
+            "original_name": original_name,
+            "saved_name": saved_name,
+            "path": str(filepath),
+        },
+        "exif": exif,
+        "hashes": hashes,
+        "ela": ela,
+        "histogram": histogram,
+        "noise": noise,
+        "compression": compression,
+        "objects": objects,
+        "steganography": steganography,
+        "executive_summary": {
+            "objects_found": objects.get("summary", ""),
+            "hidden_data": steganography.get("summary", ""),
+            "manipulation_alert": (
+                "ALERTA: Posible manipulación detectada en el análisis ELA."
+                if isinstance(ela, dict) and ela.get("possible_manipulation")
+                else "No se detectaron signos evidentes de manipulación estructural a nivel de ruido (ELA)."
+            )
+        }
+    }
 
 
 @app.get("/")
@@ -85,7 +122,7 @@ async def upload_file(file: UploadFile = File(...), folder: str = Form("evidenci
     target_dir.mkdir(parents=True, exist_ok=True)
     filepath = target_dir / filename
 
-    print(f"[SAVE] Guardando archivo permanentemente: {filepath}")
+    print(f"[SAVE] Guardando archivo: {filepath}")
 
     with open(filepath, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
@@ -98,76 +135,76 @@ async def upload_file(file: UploadFile = File(...), folder: str = Form("evidenci
 
 @app.post("/analyze")
 async def analyze_image(filename: str = Form(...), original_name: str = Form(...)):
-
-    print(f"[REQ] Solicitud de análisis para: {filename}")
+    """
+    Analiza una imagen que ya fue subida con /upload.
+    Si el archivo ya no existe (reinicio del servidor / instancia efímera),
+    devuelve un error claro para que el frontend use /analyze-file en su lugar.
+    """
+    print(f"[REQ] Análisis para: {filename}")
     filepath = UPLOAD_DIR / filename
 
     if not filepath.exists():
-        raise HTTPException(status_code=404, detail="El archivo especificado no existe.")
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                "El archivo no existe en el servidor. El servidor puede haberse reiniciado "
+                "(almacenamiento efímero). Por favor usa /analyze-file para subir y analizar "
+                "la imagen en una sola petición."
+            )
+        )
 
     try:
-        print("[START] Iniciando análisis forense...")
-
-        exif = analyze_exif(filepath)
-        print("[OK] EXIF listo")
-
-        hashes = analyze_hashes(filepath)
-        print("[OK] Hashes listos")
-
-        ela = analyze_ela(filepath, TEMP_DIR)
-        print("[OK] ELA listo")
-
-        histogram = analyze_histogram(filepath)
-        print("[OK] Histograma listo")
-
-        noise = analyze_noise(filepath)
-        print("[OK] Ruido listo")
-
-        compression = analyze_compression(filepath)
-        print("[OK] Compresión lista")
-
-        print("[START] YOLOv8 Detección de Objetos...")
-        objects = analyze_objects(filepath)
-        print("[OK] Objetos:", objects.get("summary", "Done"))
-
-        # GC explícito antes de la esteganografía (la más costosa después de YOLO)
+        result = _run_analysis(filepath, original_name, filename)
+        print("[DONE] Análisis completado.")
+        return JSONResponse(result)
+    except Exception as e:
+        print(f"[ERR] {e}")
+        raise HTTPException(status_code=500, detail=f"Error interno en análisis: {str(e)}")
+    finally:
         gc.collect()
 
-        print("[START] Análisis de Esteganografía...")
-        steganography = analyze_steganography(filepath)
-        print("[OK] Esteganografía:", steganography.get("summary", "Done"))
 
-        result = {
-            "file": {
-                "original_name": original_name,
-                "saved_name": filename,
-                "path": str(filepath),
-            },
-            "exif": exif,
-            "hashes": hashes,
-            "ela": ela,
-            "histogram": histogram,
-            "noise": noise,
-            "compression": compression,
-            "objects": objects,
-            "steganography": steganography,
-            "executive_summary": {
-                "objects_found": objects.get("summary", ""),
-                "hidden_data": steganography.get("summary", ""),
-                "manipulation_alert": (
-                    "ALERTA: Posible manipulación detectada en el análisis ELA."
-                    if type(ela) is dict and ela.get("possible_manipulation")
-                    else "No se detectaron signos evidentes de manipulación estructural a nivel de ruido (ELA)."
-                )
-            }
-        }
+@app.post("/analyze-file")
+async def analyze_file_direct(
+    file: UploadFile = File(...),
+    original_name: str = Form(None)
+):
+    """
+    Sube y analiza la imagen en una sola petición.
+    Resuelve el problema de almacenamiento efímero en Render Free Tier:
+    el archivo se analiza y luego se elimina, sin depender de persistencia.
+    """
+    extension = Path(file.filename).suffix.lower()
 
-        print("[DONE] Resultado final generado exitosamente.")
+    if extension not in ALLOWED_EXTENSIONS:
+        raise HTTPException(status_code=400, detail="Formato de imagen no soportado.")
+
+    name = original_name or file.filename
+    tmp_path = None
+
+    try:
+        # Guardar en archivo temporal (se borra al terminar)
+        with tempfile.NamedTemporaryFile(
+            suffix=extension,
+            dir=str(TEMP_DIR),
+            delete=False
+        ) as tmp:
+            shutil.copyfileobj(file.file, tmp)
+            tmp_path = Path(tmp.name)
+
+        print(f"[REQ] Análisis directo: {name}")
+        result = _run_analysis(tmp_path, name, tmp_path.name)
+        print("[DONE] Análisis directo completado.")
         return JSONResponse(result)
 
     except Exception as e:
-        print(f"[ERR] Error durante el análisis: {e}")
+        print(f"[ERR] {e}")
         raise HTTPException(status_code=500, detail=f"Error interno en análisis: {str(e)}")
     finally:
-        # GC explícito al terminar cada análisis completo
+        # Eliminar el archivo temporal siempre
+        if tmp_path and tmp_path.exists():
+            try:
+                tmp_path.unlink()
+            except Exception:
+                pass
         gc.collect()
