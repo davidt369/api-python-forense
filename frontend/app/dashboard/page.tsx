@@ -5,7 +5,17 @@ import Link from "next/link";
 import { prisma } from "@/app/lib/prisma";
 import { getServerUser } from "@/app/lib/auth";
 import { redirect } from "next/navigation";
-import { FileText, FolderSearch, PlusCircle } from "lucide-react";
+import {
+  FileText,
+  FolderSearch,
+  PlusCircle,
+  Clock,
+  CheckCircle2,
+  Search,
+  Inbox,
+  BarChart3,
+} from "lucide-react";
+import { Card, CardContent } from "@/app/components/ui/card";
 
 export default async function DashboardPage() {
   const user = await getServerUser();
@@ -18,6 +28,15 @@ export default async function DashboardPage() {
     where: { userId: user.userId },
     orderBy: { createdAt: "desc" },
   });
+
+  const counts = {
+    pendientes: evidencias.filter((e) => e.status === "PENDIENTE").length,
+    revisando: evidencias.filter((e) => e.status === "REVISANDO").length,
+    terminados: evidencias.filter(
+      (e) => e.status === "TERMINADO" || e.status === "RECEPCIONADO"
+    ).length,
+    total: evidencias.length,
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -50,94 +69,169 @@ export default async function DashboardPage() {
 
   return (
     <PortalLayout>
-      <div className="bg-card border border-border rounded-xl p-4 sm:p-5 shadow-sm w-full overflow-hidden">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-          <h2 className="text-lg font-bold flex items-center gap-2">
-            Mis solicitudes
-          </h2>
-          {evidencias.length > 0 && (
+      <div className="space-y-6 animate-fade-in">
+        {/* Bienvenida */}
+        <div>
+          <h1 className="text-2xl font-bold">
+            Bienvenido, {user.name?.split(" ")[0] || "Usuario"}
+          </h1>
+          <p className="text-muted-foreground">
+            Gestiona tus solicitudes de análisis forense digital
+          </p>
+        </div>
+
+        {/* Tarjetas de resumen */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            {
+              label: "Total Solicitudes",
+              value: counts.total,
+              icon: BarChart3,
+              color: "text-blue-400",
+              bg: "bg-blue-500/10",
+            },
+            {
+              label: "Pendientes Pago",
+              value: counts.pendientes,
+              icon: Clock,
+              color: "text-amber-400",
+              bg: "bg-amber-500/10",
+            },
+            {
+              label: "En Revisión",
+              value: counts.revisando,
+              icon: Search,
+              color: "text-sky-400",
+              bg: "bg-sky-500/10",
+            },
+            {
+              label: "Completados",
+              value: counts.terminados,
+              icon: CheckCircle2,
+              color: "text-emerald-400",
+              bg: "bg-emerald-500/10",
+            },
+          ].map((stat) => {
+            const Icon = stat.icon;
+            return (
+              <Card key={stat.label}>
+                <CardContent className="p-4 sm:p-5">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs text-muted-foreground">
+                        {stat.label}
+                      </p>
+                      <p className="text-2xl sm:text-3xl font-bold mt-1">
+                        {stat.value}
+                      </p>
+                    </div>
+                    <div
+                      className={`${stat.bg} p-3 rounded-xl ${stat.color}`}
+                    >
+                      <Icon className="w-5 h-5" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
+        {/* Tabla de solicitudes */}
+        <div className="bg-card border border-border rounded-xl p-4 sm:p-5 shadow-sm w-full overflow-hidden">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+            <h2 className="text-lg font-bold flex items-center gap-2">
+              Mis solicitudes
+            </h2>
             <Link href="/dashboard/nueva-solicitud">
               <Button size="sm" className="w-full sm:w-auto">
                 <PlusCircle className="w-4 h-4 mr-2" />
                 Nueva solicitud
               </Button>
             </Link>
+          </div>
+
+          {evidencias.length === 0 ? (
+            <div className="text-center py-16 px-4 bg-muted/20 rounded-lg border border-dashed border-border mt-4 flex flex-col items-center justify-center gap-4">
+              <div className="p-4 bg-primary/10 rounded-full text-primary mb-2">
+                <FolderSearch className="w-8 h-8" />
+              </div>
+              <div>
+                <h3 className="font-medium text-base mb-1">
+                  No tienes solicitudes pendientes
+                </h3>
+                <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
+                  Aún no has enviado ninguna evidencia digital para análisis.
+                  Crea tu primera solicitud para comenzar.
+                </p>
+              </div>
+              <Link href="/dashboard/nueva-solicitud">
+                <Button>
+                  <PlusCircle className="w-4 h-4 mr-2" />
+                  Crear primera solicitud
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            <div className="overflow-x-auto w-full max-w-full rounded-lg border border-border mt-4">
+              <table className="w-full text-left text-sm whitespace-nowrap">
+                <thead className="bg-muted/50 border-b border-border text-muted-foreground">
+                  <tr>
+                    <th className="px-4 py-3 font-medium">Evidencia</th>
+                    <th className="px-4 py-3 font-medium">Fecha</th>
+                    <th className="px-4 py-3 font-medium">Estado</th>
+                    <th className="px-4 py-3 font-medium text-right">Acción</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {evidencias.map((evidence: any) => (
+                    <tr
+                      key={evidence.id}
+                      className="hover:bg-muted/30 transition-colors"
+                    >
+                      <td className="px-4 py-3 flex items-center gap-2 font-medium">
+                        <FileText className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                        <span className="truncate max-w-[200px]">
+                          {evidence.originalName}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {new Date(evidence.createdAt).toLocaleDateString(
+                          "es-BO"
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {getStatusBadge(evidence.status)}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        {evidence.status === "PENDIENTE" ? (
+                          <Link href={`/dashboard/pagar/${evidence.id}`}>
+                            <Button size="sm">
+                              Pagar (Bs. {evidence.amount})
+                            </Button>
+                          </Link>
+                        ) : evidence.status === "TERMINADO" ||
+                          evidence.status === "RECEPCIONADO" ? (
+                          <Link
+                            href={`/dashboard/evidencias/${evidence.id}`}
+                          >
+                            <Button size="sm" variant="outline">
+                              Ver resultado
+                            </Button>
+                          </Link>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">
+                            En proceso
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
-
-        {evidencias.length === 0 ? (
-          <div className="text-center py-16 px-4 bg-muted/20 rounded-lg border border-dashed border-border mt-4 flex flex-col items-center justify-center gap-4">
-            <div className="p-4 bg-primary/10 rounded-full text-primary mb-2">
-              <FolderSearch className="w-8 h-8" />
-            </div>
-            <div>
-              <h3 className="font-medium text-base mb-1">
-                No tienes solicitudes pendientes
-              </h3>
-              <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
-                Aún no has enviado ninguna evidencia digital para análisis.
-                Crea tu primera solicitud para comenzar.
-              </p>
-            </div>
-            <Link href="/dashboard/nueva-solicitud">
-              <Button>
-                <PlusCircle className="w-4 h-4 mr-2" />
-                Crear primera solicitud
-              </Button>
-            </Link>
-          </div>
-        ) : (
-          <div className="overflow-x-auto w-full max-w-full rounded-lg border border-border mt-4">
-            <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="bg-muted/50 border-b border-border text-muted-foreground">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Evidencia</th>
-                  <th className="px-4 py-3 font-medium">Fecha</th>
-                  <th className="px-4 py-3 font-medium">Estado</th>
-                  <th className="px-4 py-3 font-medium text-right">Acción</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {evidencias.map((evidence: any) => (
-                  <tr
-                    key={evidence.id}
-                    className="hover:bg-muted/30 transition-colors"
-                  >
-                    <td className="px-4 py-3 flex items-center gap-2 font-medium">
-                      <FileText className="w-4 h-4 text-muted-foreground" />
-                      {evidence.originalName}
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {new Date(evidence.createdAt).toLocaleDateString("es-BO")}
-                    </td>
-                    <td className="px-4 py-3">
-                      {getStatusBadge(evidence.status)}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      {evidence.status === "PENDIENTE" ? (
-                        <Link href={`/dashboard/pagar/${evidence.id}`}>
-                          <Button size="sm">
-                            Pagar (Bs. {evidence.amount})
-                          </Button>
-                        </Link>
-                      ) : evidence.status === "TERMINADO" ? (
-                        <Link href={`/dashboard/evidencias/${evidence.id}`}>
-                          <Button size="sm" variant="outline">
-                            Ver resultado
-                          </Button>
-                        </Link>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">
-                          En proceso
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
       </div>
     </PortalLayout>
   );

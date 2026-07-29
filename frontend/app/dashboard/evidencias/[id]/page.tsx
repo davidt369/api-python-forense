@@ -6,7 +6,7 @@ import {
   Shield, FileText, ArrowLeft, Eye, Download,
   Clock, AlertTriangle, CheckCircle2, ImageIcon, QrCode,
   MapPin, Camera, Fingerprint, Activity, BarChart3,
-  Layers, Cpu, Copy, Target
+  Layers, Cpu, Copy, Target, Maximize2
 } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
@@ -18,6 +18,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import Link from "next/link";
+import MapViewDynamic from "@/components/MapViewDynamic";
 
 export default function EvidenceDetailPage() {
   const { id } = useParams();
@@ -27,6 +28,7 @@ export default function EvidenceDetailPage() {
   const [activeTab, setActiveTab] = useState("resumen");
   const [copiedHash, setCopiedHash] = useState("");
   const [showPreview, setShowPreview] = useState(false);
+  const [showMapPreview, setShowMapPreview] = useState(false);
 
   useEffect(() => {
     fetchEvidence();
@@ -310,13 +312,43 @@ export default function EvidenceDetailPage() {
                       </div>
                     )}
                     {exifData.gps && (
-                      <div className="bg-muted/50 p-4 rounded-xl">
-                        <p className="text-xs text-muted-foreground mb-2 font-semibold text-green-400">GPS</p>
-                        <div className="space-y-1 text-sm">
-                          <p><span className="text-muted-foreground">Latitud:</span> {exifData.gps.latitude || "N/A"}</p>
-                          <p><span className="text-muted-foreground">Longitud:</span> {exifData.gps.longitude || "N/A"}</p>
-                          <p><span className="text-muted-foreground">Altitud:</span> {exifData.gps.altitude || "N/A"}</p>
+                      <div className="lg:col-span-2 bg-muted/50 p-4 rounded-xl">
+                        <div className="flex items-center justify-between mb-3">
+                          <p className="text-xs text-muted-foreground font-semibold text-green-400">GPS — Ubicación del dispositivo</p>
+                          <button
+                            onClick={() => setShowMapPreview(true)}
+                            className="text-xs text-primary hover:text-primary/80 flex items-center gap-1 transition-colors"
+                          >
+                            <Maximize2 className="w-3 h-3" />
+                            Ver mapa completo
+                          </button>
                         </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+                          <p className="text-sm"><span className="text-muted-foreground">Latitud:</span> {exifData.gps.latitude || "N/A"}</p>
+                          <p className="text-sm"><span className="text-muted-foreground">Longitud:</span> {exifData.gps.longitude || "N/A"}</p>
+                          <p className="text-sm"><span className="text-muted-foreground">Altitud:</span> {exifData.gps.altitude ? `${exifData.gps.altitude}m` : "N/A"}</p>
+                        </div>
+                        <div className="h-[250px] w-full overflow-hidden rounded-xl border border-border">
+                          <MapViewDynamic
+                            locations={[
+                              {
+                                lat: exifData.gps.latitude,
+                                lng: exifData.gps.longitude,
+                                name: evidence.originalName,
+                                evidenceId: evidence.id,
+                                elaResult: evidence.analysis?.elaResult,
+                              },
+                            ]}
+                            height="250px"
+                            single
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {!exifData?.gps && (
+                      <div className="bg-muted/50 p-4 rounded-xl">
+                        <p className="text-xs text-muted-foreground mb-2 font-semibold text-muted-foreground">GPS</p>
+                        <p className="text-sm text-muted-foreground">No hay datos de ubicación disponibles</p>
                       </div>
                     )}
                   </div>
@@ -425,6 +457,34 @@ export default function EvidenceDetailPage() {
                 className="w-full h-full border-0 absolute inset-0"
                 title="Certificado PDF"
               />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Mapa completo */}
+      {exifData?.gps && (
+        <Dialog open={showMapPreview} onOpenChange={setShowMapPreview}>
+          <DialogContent className="max-w-5xl w-[90vw] h-[85vh] flex flex-col p-0 overflow-hidden">
+            <DialogHeader className="p-4 border-b flex-shrink-0">
+              <DialogTitle>Ubicación GPS — {evidence.originalName}</DialogTitle>
+            </DialogHeader>
+            <div className="flex-1 w-full min-h-0 relative">
+              <div className="absolute inset-0 m-2">
+                <MapViewDynamic
+                  locations={[
+                    {
+                      lat: exifData.gps.latitude,
+                      lng: exifData.gps.longitude,
+                      name: evidence.originalName,
+                      evidenceId: evidence.id,
+                      elaResult: evidence.analysis?.elaResult,
+                    },
+                  ]}
+                  height="100%"
+                  single
+                />
+              </div>
             </div>
           </DialogContent>
         </Dialog>
