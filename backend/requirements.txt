@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+Pillow
+numpy
+opencv-python-headless
+imagehash
+python-multipart
+requests
+pytest
+pytest-asyncio
+httpx
+stegano
