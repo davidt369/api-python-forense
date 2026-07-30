@@ -72,12 +72,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    if (auth.role !== "CLIENTE") {
-      return NextResponse.json(
-        { error: "Solo los clientes pueden crear solicitudes" },
-        { status: 403 }
-      );
-    }
+    // Admin, Revisor y Cliente pueden subir evidencias
+    // Los administradores pueden subir para análisis rápido sin necesidad de cliente
 
     const formData = await request.formData();
     const file = formData.get("file") as File;
@@ -98,44 +94,63 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validar tamaño (máximo 5MB)
-    if (file.size > 5 * 1024 * 1024) {
+    // Validar tamaño (máximo 10MB)
+    if (file.size > 10 * 1024 * 1024) {
       return NextResponse.json(
-        { error: "La imagen es demasiado grande. Máximo 5MB permitidos." },
+        { error: "La imagen es demasiado grande. Máximo 10MB permitidos." },
         { status: 413 }
       );
     }
 
-    // Guardar imagen enviándola al backend
+    // Guardar imagen en public/ para visualización local
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const uniqueName = `${Date.now()}-${sanitizedName}`;
+    const userFolder = `evidencias/${auth.userId}`;
+    const publicDir = path.join(process.cwd(), 'public', userFolder);
+    await mkdir(publicDir, { recursive: true });
+    const localPath = path.join(publicDir, uniqueName);
+    await writeFile(localPath, buffer);
+
+    // También enviar al backend para que tenga el archivo para análisis
     const baseUrl = process.env.NODE_ENV === "production"
-  ? "https://api-python-forense.onrender.com"
-  : (process.env.NEXT_PUBLIC_FORENSIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000");
-const UPLOAD_API_URL = `${baseUrl}/upload`;
+      ? "https://api-python-forense.onrender.com"
+      : (process.env.NEXT_PUBLIC_FORENSIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000");
+    const UPLOAD_API_URL = `${baseUrl}/upload`;
 
-    const backendFormData = new FormData();
-    backendFormData.append("file", file, file.name);
-    backendFormData.append("folder", `evidencias/${auth.userId}`);
+    let backendFilename = uniqueName;
+    try {
+      const backendFormData = new FormData();
+      backendFormData.append("file", file, file.name);
+      backendFormData.append("folder", userFolder);
 
-    const uploadRes = await fetch(UPLOAD_API_URL, {
-      method: "POST",
-      body: backendFormData,
-    });
+      const uploadRes = await fetch(UPLOAD_API_URL, {
+        method: "POST",
+        body: backendFormData,
+      });
 
-    if (!uploadRes.ok) {
-      throw new Error(`Error al subir imagen al backend: ${uploadRes.status}`);
+      if (uploadRes.ok) {
+        const uploadData = await uploadRes.json();
+        backendFilename = uploadData.filename;
+      }
+    } catch (err) {
+      console.warn("⚠️ No se pudo enviar la imagen al backend (el análisis forense podría no funcionar si el backend no está disponible):", err);
     }
 
-    const uploadData = await uploadRes.json();
-
+    // Los admins/revisores pueden subir para análisis rápido (sin pago)
+    const isAdminOrRevisor = auth.role === "ADMIN" || auth.role === "REVISOR";
+    
     // Crear evidencia
     const evidence = await prisma.evidence.create({
       data: {
         userId: auth.userId,
-        imagePath: `${baseUrl}/uploads/${uploadData.filename}`, // URL absoluta para el frontend
+        imagePath: `/${userFolder}/${uniqueName}`, // Ruta local para servir desde public/
+        hash: backendFilename, // Guardamos la ruta del backend para el análisis
         originalName: file.name,
         description,
-        status: "PENDIENTE",
-        amount: 50.0, // Monto fijo por imagen
+        status: isAdminOrRevisor ? "REVISANDO" : "PENDIENTE",
+        amount: isAdminOrRevisor ? 0 : 50.0,
+        paymentVerified: isAdminOrRevisor ? true : false,
       },
       include: {
         user: {

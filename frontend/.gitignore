@@ -48,10 +48,12 @@ next-env.d.ts
 
 # Uploads and User generated files
 public/uploads/*
+public/evidencias/*
 public/certificados/qr/*
 public/certificados/pdfs/*
 public/pagos/*
 !public/uploads/.gitkeep
+!public/evidencias/.gitkeep
 !public/certificados/qr/.gitkeep
 !public/certificados/pdfs/.gitkeep
 !public/pagos/.gitkeep

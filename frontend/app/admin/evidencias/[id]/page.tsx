@@ -161,9 +161,10 @@ export default function AdminEvidenceDetailPage() {
         <Card>
           <CardContent className="p-2">
             <img
-              src={evidence.imagePath?.replace("http://localhost:8000", process.env.NODE_ENV === "production" ? "https://api-python-forense.onrender.com" : (process.env.NEXT_PUBLIC_FORENSIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000"))}
+              src={evidence.imagePath || '/placeholder-image.svg'}
               alt={evidence.originalName}
               className="w-full rounded-xl object-contain max-h-80"
+              onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-image.svg'; }}
             />
           </CardContent>
         </Card>

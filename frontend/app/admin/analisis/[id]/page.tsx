@@ -24,9 +24,10 @@ import {
   Activity,
   Info,
   AlertCircle,
-  Image as ImageIcon
+  Image as ImageIcon,
+  QrCode
 } from "lucide-react";
-import Image from "next/image";
+import EvidenceImage from "@/components/EvidenceImage";
 
 export default function AnalysisView() {
   const { id } = useParams();
@@ -34,6 +35,7 @@ export default function AnalysisView() {
   const [evidence, setEvidence] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
+  const [generatingCert, setGeneratingCert] = useState(false);
   const [copiedHash, setCopiedHash] = useState("");
   const [verifying, setVerifying] = useState(false);
 
@@ -89,6 +91,26 @@ export default function AnalysisView() {
       alert("Error de red");
     } finally {
       setVerifying(false);
+    }
+  };
+
+  const handleGenerateCertificate = async () => {
+    try {
+      setGeneratingCert(true);
+      const res = await fetch(`/api/evidencias/${id}/certificado`, { method: "POST" });
+      if (res.ok) {
+        fetchEvidence();
+        // Abrir el PDF en nueva pestaña
+        window.open(`/api/evidencias/${id}/certificado`, '_blank');
+      } else {
+        const data = await res.json();
+        alert(data.error || "Error al generar certificado");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error al generar certificado");
+    } finally {
+      setGeneratingCert(false);
     }
   };
 
@@ -203,10 +225,36 @@ export default function AnalysisView() {
                 )}
               </Button>
             ) : (
-              <Button variant="outline" className="pointer-events-none">
-                <CheckCircle2 className="size-4 mr-2 text-emerald-500" />
-                Análisis Finalizado
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" className="pointer-events-none">
+                  <CheckCircle2 className="size-4 mr-2 text-emerald-500" />
+                  Análisis Finalizado
+                </Button>
+                {evidence.certificate ? (
+                  <a href={`/api/evidencias/${id}/certificado`} target="_blank" rel="noreferrer">
+                    <Button size="lg" className="bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/30">
+                      <QrCode className="size-4 mr-2" />
+                      Ver Certificado
+                    </Button>
+                  </a>
+                ) : (
+                  <Button
+                    onClick={handleGenerateCertificate}
+                    disabled={generatingCert}
+                    size="lg"
+                    className="bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/30"
+                  >
+                    {generatingCert ? (
+                      <>Generando...</>
+                    ) : (
+                      <>
+                        <QrCode className="size-4 mr-2" />
+                        Generar Certificado
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
             )}
           </div>
         </CardContent>
@@ -224,7 +272,7 @@ export default function AnalysisView() {
             <CardContent className="flex flex-col gap-6">
               <div className="space-y-4">
                 <h3 className="font-semibold text-sm flex items-center gap-2"><ImageIcon className="w-4 h-4 text-primary" /> Imagen Original</h3>
-                <img src={evidence.imagePath?.replace("http://localhost:8000", process.env.NODE_ENV === "production" ? "https://api-python-forense.onrender.com" : (process.env.NEXT_PUBLIC_FORENSIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000"))} alt="Evidencia original" className="max-w-full h-auto object-contain rounded-xl shadow-sm max-h-72" />
+                <EvidenceImage src={evidence.imagePath} alt="Evidencia original" className="max-w-full h-auto object-contain rounded-xl shadow-sm max-h-72" />
               </div>
 
               <div className="flex flex-col gap-3 text-sm">
