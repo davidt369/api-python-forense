@@ -108,9 +108,17 @@ export async function POST(request: NextRequest) {
     const uniqueName = `${Date.now()}-${sanitizedName}`;
     const userFolder = `evidencias/${auth.userId}`;
     const publicDir = path.join(process.cwd(), 'public', userFolder);
-    await mkdir(publicDir, { recursive: true });
-    const localPath = path.join(publicDir, uniqueName);
-    await writeFile(localPath, buffer);
+    let localSaveSuccess = false;
+    try {
+      if (!process.env.VERCEL) {
+        await mkdir(publicDir, { recursive: true });
+        const localPath = path.join(publicDir, uniqueName);
+        await writeFile(localPath, buffer);
+        localSaveSuccess = true;
+      }
+    } catch (fsError) {
+      console.warn("⚠️ No se pudo guardar la imagen localmente (posible entorno Serverless como Vercel):", fsError);
+    }
 
     // También enviar al backend para que tenga el archivo para análisis
     const baseUrl = process.env.NODE_ENV === "production"
@@ -140,11 +148,16 @@ export async function POST(request: NextRequest) {
     // Los admins/revisores pueden subir para análisis rápido (sin pago)
     const isAdminOrRevisor = auth.role === "ADMIN" || auth.role === "REVISOR";
     
+    // Si estamos en Vercel o no se guardó localmente, usamos la URL del backend
+    const finalImagePath = (process.env.VERCEL || !localSaveSuccess)
+      ? `${baseUrl}/uploads/${userFolder}/${uniqueName}`
+      : `/${userFolder}/${uniqueName}`;
+
     // Crear evidencia
     const evidence = await prisma.evidence.create({
       data: {
         userId: auth.userId,
-        imagePath: `/${userFolder}/${uniqueName}`, // Ruta local para servir desde public/
+        imagePath: finalImagePath, // Ruta dinámica según entorno
         hash: backendFilename, // Guardamos la ruta del backend para el análisis
         originalName: file.name,
         description,
