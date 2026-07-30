@@ -61,7 +61,7 @@ export function HeroSection({ user, dashboardPath }: { user: any; dashboardPath:
 
             <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-3 pt-2 w-full">
               <Link href={user ? dashboardPath : "/auth/register"} className="w-full sm:w-auto">
-                <ShimmerButton className="shadow-lg h-12 px-7 w-full sm:w-auto rounded-xl" background="hsl(var(--primary))">
+                <ShimmerButton className="shadow-lg h-12 px-7 w-full sm:w-auto rounded-xl" background="var(--primary)">
                   <span className="text-center text-sm font-bold leading-none tracking-tight text-primary-foreground flex items-center justify-center gap-2">
                     <ShieldCheck className="w-4 h-4" />
                     Certificar Evidencia Digital
