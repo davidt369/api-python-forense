@@ -150,7 +150,7 @@ export async function POST(request: NextRequest) {
     
     // Si estamos en Vercel o no se guardó localmente, usamos la URL del backend
     const finalImagePath = (process.env.VERCEL || !localSaveSuccess)
-      ? `${baseUrl}/uploads/${userFolder}/${uniqueName}`
+      ? `${baseUrl}/uploads/${userFolder}/${backendFilename}`
       : `/${userFolder}/${uniqueName}`;
 
     // Crear evidencia
