@@ -121,9 +121,7 @@ export async function POST(request: NextRequest) {
     }
 
     // También enviar al backend para que tenga el archivo para análisis
-    const baseUrl = process.env.NODE_ENV === "production"
-      ? "https://api-python-forense.onrender.com"
-      : (process.env.NEXT_PUBLIC_FORENSIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000");
+    const baseUrl = process.env.NEXT_PUBLIC_FORENSIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000";
     const UPLOAD_API_URL = `${baseUrl}/upload`;
 
     let backendFilename = uniqueName;
@@ -149,9 +147,9 @@ export async function POST(request: NextRequest) {
     const isAdminOrRevisor = auth.role === "ADMIN" || auth.role === "REVISOR";
     
     // Si estamos en Vercel o no se guardó localmente, usamos la URL del backend
-    const finalImagePath = (process.env.VERCEL || !localSaveSuccess)
+    const finalImagePath = /* (process.env.VERCEL || !localSaveSuccess)
       ? `${baseUrl}/uploads/${userFolder}/${backendFilename}`
-      : `/${userFolder}/${uniqueName}`;
+      : */ `/${userFolder}/${uniqueName}`;
 
     // Crear evidencia
     const evidence = await prisma.evidence.create({

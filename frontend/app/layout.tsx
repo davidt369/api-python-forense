@@ -53,7 +53,10 @@ export default function RootLayout({
         >
           <Providers>{children}</Providers>
         </ThemeProvider>
-      </body>
+      {/* impeccable-live-start */}
+<script src="http://localhost:8400/live.js?token=cc926480-2a00-4cae-a049-44cdd941fd97"></script>
+{/* impeccable-live-end */}
+</body>
     </html>
   );
 }

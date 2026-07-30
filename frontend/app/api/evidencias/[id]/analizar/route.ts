@@ -4,9 +4,7 @@ import { getUserFromRequest } from "@/app/lib/auth";
 import { readFile } from "fs/promises";
 import path from "path";
 
-const baseUrl = process.env.NODE_ENV === "production"
-  ? "https://api-python-forense.onrender.com"
-  : (process.env.NEXT_PUBLIC_FORENSIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000");
+const baseUrl = process.env.NEXT_PUBLIC_FORENSIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000";
 const FORENSIC_API_URL = `${baseUrl}/analyze`;
 
 export async function POST(
@@ -54,9 +52,7 @@ export async function POST(
     
     if (!filename) {
       // Intentar subir el archivo local al backend para análisis
-      const baseUrl = process.env.NODE_ENV === "production"
-        ? "https://api-python-forense.onrender.com"
-        : (process.env.NEXT_PUBLIC_FORENSIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000");
+      const baseUrlUploads = process.env.NEXT_PUBLIC_FORENSIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000";
       const UPLOAD_API_URL = `${baseUrl}/upload`;
       
       try {
@@ -122,7 +118,7 @@ export async function POST(
     } catch (apiError) {
       console.error("⚠️ Error al conectar con API forense externa:", apiError);
       return NextResponse.json(
-        { error: `No se pudo conectar con el servidor de análisis forense. Verifica que la API esté configurada en https://api-python-forense.onrender.com/` },
+        { error: `No se pudo conectar con el servidor de análisis forense. Verifica que la API esté configurada correctamente.` },
         { status: 503 }
       );
     }
