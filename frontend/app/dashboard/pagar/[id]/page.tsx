@@ -10,7 +10,7 @@ import { UploadCloud, CheckCircle2, AlertCircle, ArrowLeft, Receipt, ShieldCheck
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Skeleton } from "boneyard-js/react";
+
 import { MagicCard } from "@/components/ui/magic-card";
 
 export default function PagoPage() {
@@ -170,7 +170,6 @@ export default function PagoPage() {
 
   return (
     <PortalLayout>
-      <Skeleton name="pago-main" loading={false}>
         <motion.div 
           variants={containerVariants}
           initial="hidden"
@@ -376,7 +375,6 @@ export default function PagoPage() {
             </motion.div>
           </div>
         </motion.div>
-      </Skeleton>
     </PortalLayout>
   );
 }

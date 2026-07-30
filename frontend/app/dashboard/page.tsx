@@ -5,23 +5,7 @@ import Link from "next/link";
 import { prisma } from "@/app/lib/prisma";
 import { getServerUser } from "@/app/lib/auth";
 import { redirect } from "next/navigation";
-import {
-  FolderSearch,
-  PlusCircle,
-  Clock,
-  CheckCircle2,
-  Search,
-  Inbox,
-  BarChart3,
-  CreditCard,
-  Eye,
-  Activity,
-  FileBadge
-} from "lucide-react";
-import { Card, CardContent } from "@/app/components/ui/card";
-import EvidenceImage from "@/components/EvidenceImage";
-import { Skeleton } from "boneyard-js/react";
-import { MagicCard } from "@/components/ui/magic-card";
+
 import { DashboardClient } from "./DashboardClient";
 
 export default async function DashboardPage() {
@@ -47,9 +31,7 @@ export default async function DashboardPage() {
 
   return (
     <PortalLayout>
-      <Skeleton name="dashboard-main" loading={false}>
         <DashboardClient user={user} evidencias={evidencias} counts={counts} />
-      </Skeleton>
     </PortalLayout>
   );
 }
