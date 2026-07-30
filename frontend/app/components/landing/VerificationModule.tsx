@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Activity, Shield, AlertTriangle, HelpCircle, Check, Copy } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
+import { MagicCard } from "@/components/ui/magic-card";
 
 const sampleHashes = [
   {
@@ -86,13 +87,15 @@ export function VerificationModule() {
           </p>
         </motion.div>
 
-        {/* Search Box */}
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          className="shadow-xl shadow-primary/5 p-5 sm:p-8 rounded-xl bg-card border border-border space-y-5"
         >
+          <MagicCard
+            className="shadow-xl shadow-primary/5 p-5 sm:p-8 rounded-xl bg-card border border-border space-y-5"
+            gradientColor={"rgba(var(--primary), 0.1)"}
+          >
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-grow group">
               <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
@@ -234,6 +237,7 @@ export function VerificationModule() {
             )}
           </AnimatePresence>
 
+          </MagicCard>
         </motion.div>
       </div>
     </section>

@@ -7,7 +7,9 @@ import { Badge } from "@/app/components/ui/badge";
 import { buttonVariants } from "@/app/components/ui/button";
 import { cn } from "@/app/lib/utils";
 import { InteractiveScanner } from "./InteractiveScanner";
-
+import { SparklesText } from "@/components/ui/sparkles-text";
+import { ShimmerButton } from "@/components/ui/shimmer-button";
+import { BorderBeam } from "@/components/ui/border-beam";
 export function HeroSection({ user, dashboardPath }: { user: any; dashboardPath: string }) {
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -43,24 +45,29 @@ export function HeroSection({ user, dashboardPath }: { user: any; dashboardPath:
               </Badge>
             </motion.div>
 
-            <motion.h1 variants={itemVariants} className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.12] text-foreground font-sans">
-              Certificación <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
-                Forense Digital
-              </span> <br />
-              de Alta Precisión
-            </motion.h1>
+            <motion.div variants={itemVariants} className="flex flex-col gap-1">
+              <SparklesText className="text-4xl sm:text-5xl lg:text-6xl text-foreground font-extrabold tracking-tight text-left">
+                Certificación Forense Digital
+              </SparklesText>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.12] text-foreground font-sans">
+                de Alta Precisión
+              </h1>
+            </motion.div>
 
             <motion.p variants={itemVariants} className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-xl font-medium">
               Garantiza la autenticidad e integridad de pruebas digitales con algoritmos ELA (Error Level Analysis), extracción EXIF y firma criptográfica inalterable con validez jurídica plena.
             </motion.p>
 
-            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 pt-2">
-              <Link href={user ? dashboardPath : "/auth/register"} className={cn(buttonVariants({ size: "lg" }), "w-full sm:w-auto h-12 px-8 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-[15px] shadow-lg shadow-primary/25 transition-all group focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary")}>
-                  Certificar Evidencia Digital
-                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform inline" />
+            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 pt-2 w-full">
+              <Link href={user ? dashboardPath : "/auth/register"} className="w-full sm:w-auto">
+                <ShimmerButton className="shadow-2xl h-12 px-8 w-full sm:w-auto" background="hsl(var(--primary))">
+                  <span className="text-center text-[15px] font-bold leading-none tracking-tight text-primary-foreground flex items-center justify-center">
+                    Certificar Evidencia Digital
+                    <ArrowRight className="w-5 h-5 ml-2 transition-transform inline group-hover:translate-x-1" />
+                  </span>
+                </ShimmerButton>
               </Link>
-              <a href="#validar-hash" className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full sm:w-auto h-12 px-8 rounded-md border-border bg-card hover:bg-slate-50 dark:hover:bg-slate-800 text-foreground font-semibold text-[15px] shadow-sm transition-all focus-visible:ring-2 focus-visible:ring-primary")}>
+              <a href="#validar-hash" className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full sm:w-auto h-12 px-8 rounded-[100px] border-border bg-card hover:bg-slate-50 dark:hover:bg-slate-800 text-foreground font-semibold text-[15px] shadow-sm transition-all focus-visible:ring-2 focus-visible:ring-primary")}>
                   <Search className="w-4 h-4 mr-2 text-primary inline" />
                   Validar Código Hash
               </a>
@@ -86,10 +93,11 @@ export function HeroSection({ user, dashboardPath }: { user: any; dashboardPath:
             initial={{ opacity: 0, x: 50, rotateY: -10 }}
             animate={{ opacity: 1, x: 0, rotateY: 0 }}
             transition={{ duration: 0.8, type: "spring", bounce: 0.4 }}
-            className="lg:col-span-6 relative perspective-1000"
+            className="lg:col-span-6 relative perspective-1000 rounded-2xl overflow-hidden"
             id="demostracion-live"
           >
             <InteractiveScanner />
+            <BorderBeam size={250} duration={12} delay={9} />
           </motion.div>
 
         </div>

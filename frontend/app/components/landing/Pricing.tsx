@@ -5,6 +5,7 @@ import { motion, Variants } from "framer-motion";
 import { Check, Zap, Sparkles } from "lucide-react";
 import { buttonVariants } from "@/app/components/ui/button";
 import { cn } from "@/app/lib/utils";
+import { MagicCard } from "@/components/ui/magic-card";
 
 export function Pricing() {
   const container: Variants = {
@@ -47,7 +48,7 @@ export function Pricing() {
         >
           {/* Plan 1 */}
           <motion.div variants={item}>
-            <div className="shadow-lg hover:shadow-xl p-6 sm:p-8 rounded-2xl border border-border bg-card hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between h-full space-y-6">
+            <MagicCard className="shadow-lg hover:shadow-xl p-6 sm:p-8 rounded-2xl border border-border bg-card flex flex-col justify-between h-full space-y-6" gradientColor="rgba(var(--primary), 0.1)">
               <div className="relative z-10">
                 <h3 className="text-lg font-bold text-foreground mb-2 uppercase tracking-tight">Análisis Expres</h3>
                 <p className="text-[13px] text-muted-foreground mb-6">Ideal para verificación personal rápida de imágenes y metadatos.</p>
@@ -72,12 +73,12 @@ export function Pricing() {
               <Link href="/auth/register" className={cn(buttonVariants({ variant: "outline" }), "w-full h-12 rounded-lg border-border text-foreground hover:bg-slate-100 dark:hover:bg-slate-800 font-bold uppercase tracking-wider text-[11px] focus-visible:ring-2 focus-visible:ring-primary relative z-10")}>
                   Comenzar Análisis
               </Link>
-            </div>
+            </MagicCard>
           </motion.div>
 
           {/* Plan 2: Recommended */}
           <motion.div variants={item} className="relative z-20">
-            <div className="shadow-2xl shadow-primary/20 p-6 sm:p-8 rounded-2xl border-2 border-primary bg-background flex flex-col justify-between h-full space-y-6 relative group md:scale-105">
+            <MagicCard className="shadow-2xl shadow-primary/20 p-6 sm:p-8 rounded-2xl border-2 border-primary bg-background flex flex-col justify-between h-full space-y-6 relative group md:scale-105" gradientColor="rgba(var(--primary), 0.2)">
               {/* Dynamic Glow - Fixed to not need overflow-hidden on parent */}
               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5 opacity-50 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl pointer-events-none" />
 
@@ -116,12 +117,12 @@ export function Pricing() {
                   <Zap className="w-3.5 h-3.5 mr-2 inline" />
                   Solicitar Dictamen
               </Link>
-            </div>
+            </MagicCard>
           </motion.div>
 
           {/* Plan 3 */}
           <motion.div variants={item}>
-            <div className="shadow-lg hover:shadow-xl p-6 sm:p-8 rounded-2xl border border-border bg-card hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between h-full space-y-6">
+            <MagicCard className="shadow-lg hover:shadow-xl p-6 sm:p-8 rounded-2xl border border-border bg-card flex flex-col justify-between h-full space-y-6" gradientColor="rgba(var(--primary), 0.1)">
               <div>
                 <h3 className="text-lg font-bold text-foreground mb-2 uppercase tracking-tight">Enterprise / B2B</h3>
                 <p className="text-[13px] text-muted-foreground mb-6">Para bufetes, fiscalías e instituciones con alto volumen.</p>
@@ -146,7 +147,7 @@ export function Pricing() {
               <Link href="/contacto" className={cn(buttonVariants({ variant: "ghost" }), "w-full h-12 rounded-lg bg-muted hover:bg-slate-200 dark:hover:bg-slate-800 text-foreground font-bold uppercase tracking-wider text-[11px] focus-visible:ring-2 focus-visible:ring-primary")}>
                   Contactar Ventas
               </Link>
-            </div>
+            </MagicCard>
           </motion.div>
 
         </motion.div>
