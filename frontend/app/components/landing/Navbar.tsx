@@ -79,83 +79,77 @@ export function Navbar() {
             : "bg-transparent border-transparent"
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-lg bg-primary text-primary-foreground shadow-md transition-transform hover:scale-105 cursor-pointer">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+          <Link href="/" className="flex items-center gap-3 group shrink-0">
+            <div className="p-2 rounded-xl bg-primary text-primary-foreground shadow-md transition-all group-hover:scale-105">
               <Image
                 src="/logo/logo-afd.png"
                 alt="AFD Logo"
-                width={36}
-                height={36}
-                className="w-7 h-7 object-contain brightness-0 invert"
+                width={32}
+                height={32}
+                className="w-6 h-6 object-contain brightness-0 invert"
                 priority
               />
             </div>
             <div>
-              <span className="font-bold text-base sm:text-lg tracking-tight text-foreground block leading-tight">
+              <span className="font-extrabold text-base sm:text-lg tracking-tight text-foreground block leading-tight group-hover:text-primary transition-colors">
                 Agencia Forense Digital
               </span>
-              <span className="text-[10px] sm:text-[11px] font-mono text-primary tracking-wider uppercase block font-semibold">
+              <span className="text-[10px] font-mono text-muted-foreground tracking-wider uppercase block font-medium">
                 Plataforma de Certificación
               </span>
             </div>
-          </div>
+          </Link>
 
-          <div className="hidden lg:flex items-center gap-8 text-[13px] font-bold tracking-wide uppercase text-muted-foreground">
-            {["Demostración Live", "Validar Hash", "Metodología", "Tarifas"].map((item, idx) => (
+          <div className="hidden md:flex items-center gap-6 xl:gap-8 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            {[
+              { name: "Demostración Live", href: "#demostracion-live" },
+              { name: "Validar Hash", href: "#validar-hash" },
+              { name: "Metodología", href: "#metodologia" },
+              { name: "Tarifas", href: "#tarifas" },
+            ].map((item) => (
               <a
-                key={idx}
-                href={`#${item.toLowerCase().replace(/ /g, "-").replace(/ó/g, "o")}`}
-                className="hover:text-primary transition-colors relative group"
+                key={item.name}
+                href={item.href}
+                className="hover:text-foreground transition-colors relative py-1 group"
               >
-                {item}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
+                {item.name}
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
               </a>
             ))}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 shrink-0">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setTheme(isDarkMode ? "light" : "dark")}
               title={isDarkMode ? "Cambiar a Modo Claro" : "Cambiar a Modo Oscuro"}
-              className="w-10 h-10 rounded-xl border border-border bg-muted text-muted-foreground hover:bg-slate-200 dark:hover:bg-slate-800 transition-all shadow-sm focus-visible:ring-2 focus-visible:ring-primary"
+              className="w-9 h-9 rounded-xl border border-border/60 bg-card/50 text-muted-foreground hover:text-foreground hover:bg-muted transition-all shadow-sm"
             >
               {mounted && (
                 isDarkMode ? (
-                  <Sun className="h-5 w-5 text-amber-400 transition-all" />
+                  <Sun className="h-4 w-4 text-amber-400 transition-all" />
                 ) : (
-                  <Moon className="h-5 w-5 text-indigo-600 transition-all" />
+                  <Moon className="h-4 w-4 text-indigo-600 transition-all" />
                 )
               )}
-              {!mounted && <Sun className="h-5 w-5 opacity-0" />}
+              {!mounted && <Sun className="h-4 w-4 opacity-0" />}
               <span className="sr-only">Cambiar Tema</span>
             </Button>
 
-            <div className="hidden sm:flex items-center gap-3">
-              {deferredPrompt && (
-                <Button
-                  onClick={handleInstallClick}
-                  variant="outline"
-                  size="sm"
-                  className="border-primary/30 text-primary hover:bg-primary/10 font-bold px-4 h-10 rounded-md transition-all shadow-sm"
-                >
-                  <Download className="w-4 h-4 mr-1.5" />
-                  Descargar App
-                </Button>
-              )}
+            <div className="hidden sm:flex items-center gap-2">
               {user ? (
-                <Link href={dashboardPath} className={cn(buttonVariants({ size: "sm" }), "bg-primary hover:bg-primary/90 text-primary-foreground font-bold border-0 px-5 h-10 rounded-md transition-all shadow-md")}>
+                <Link href={dashboardPath} className={cn(buttonVariants({ size: "sm" }), "bg-primary hover:bg-primary/90 text-primary-foreground font-bold border-0 px-4 h-9 rounded-xl transition-all shadow-md text-xs")}>
                   Ir al Panel
-                  <ArrowRight className="w-4 h-4 ml-1.5 inline" />
+                  <ArrowRight className="w-3.5 h-3.5 ml-1.5 inline" />
                 </Link>
               ) : (
                 <>
-                  <Link href="/auth/login" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "text-muted-foreground hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold px-4 h-10 rounded-md uppercase tracking-wider text-xs")}>
+                  <Link href="/auth/login" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "text-muted-foreground hover:text-foreground font-medium px-3.5 h-9 rounded-xl text-xs")}>
                     Iniciar Sesión
                   </Link>
-                  <Link href="/auth/register" className={cn(buttonVariants({ size: "sm" }), "bg-primary hover:bg-primary/90 text-primary-foreground font-bold border-0 px-5 h-10 rounded-md transition-all shadow-md")}>
+                  <Link href="/auth/register" className={cn(buttonVariants({ size: "sm" }), "bg-primary hover:bg-primary/90 text-primary-foreground font-bold border-0 px-4 h-9 rounded-xl transition-all shadow-md text-xs")}>
                     Acceder al Portal
                   </Link>
                 </>
@@ -165,12 +159,12 @@ export function Navbar() {
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden w-11 h-11 border border-border text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary"
+              className="md:hidden w-9 h-9 border border-border/60 text-muted-foreground rounded-xl"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               aria-label="Abrir Menú"
               aria-expanded={isMenuOpen}
             >
-              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
           </div>
         </div>
