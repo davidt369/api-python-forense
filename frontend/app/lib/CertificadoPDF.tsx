@@ -51,12 +51,12 @@ const styles = StyleSheet.create({
   // Barra de cabecera oscura
   headerBar: {
     backgroundColor: "#0f172a", // slate-900
-    height: 10,
+    height: 8,
     width: "100%",
   },
   headerContent: {
-    padding: 15,
-    paddingTop: 15,
+    padding: 12,
+    paddingTop: 12,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -67,32 +67,32 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   logo: {
-    width: 45,
-    height: 45,
-    marginRight: 12,
+    width: 35,
+    height: 35,
+    marginRight: 10,
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "bold",
     color: "#0f172a",
     letterSpacing: 0.5,
   },
   headerSubtitle: {
-    fontSize: 8,
+    fontSize: 7,
     color: "#64748b",
     marginTop: 2,
   },
   qrContainerHeader: {
-    width: 45,
-    height: 45,
+    width: 35,
+    height: 35,
   },
   mainBody: {
-    padding: 20,
-    paddingTop: 10,
+    padding: 15,
+    paddingTop: 8,
     flex: 1,
   },
   certificateTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "bold",
     color: "#1e40af",
     textAlign: "center",
@@ -100,23 +100,23 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   certificateCode: {
-    fontSize: 8,
+    fontSize: 7,
     color: "#64748b",
     textAlign: "center",
-    marginBottom: 10,
+    marginBottom: 8,
     fontFamily: "Courier",
   },
   section: {
-    marginBottom: 8,
+    marginBottom: 6,
   },
   sectionHeader: {
     backgroundColor: "#f1f5f9", // slate-100
-    padding: 4,
+    padding: 3,
     borderLeft: "4 solid #1e40af",
-    marginBottom: 4,
+    marginBottom: 3,
   },
   sectionTitle: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: "bold",
     color: "#0f172a",
     textTransform: "uppercase",
@@ -129,26 +129,26 @@ const styles = StyleSheet.create({
   },
   gridCell: {
     width: "50%",
-    padding: 4,
+    padding: 3,
     borderRight: "1 solid #e2e8f0",
     borderBottom: "1 solid #e2e8f0",
   },
   gridLabel: {
-    fontSize: 7,
+    fontSize: 6,
     color: "#64748b",
     fontWeight: "bold",
-    marginBottom: 2,
+    marginBottom: 1,
     textTransform: "uppercase",
   },
   gridValue: {
-    fontSize: 9,
+    fontSize: 8,
     color: "#0f172a",
   },
   // Veredicto
   verdictContainer: {
-    padding: 8,
+    padding: 6,
     borderRadius: 4,
-    marginBottom: 8,
+    marginBottom: 6,
     alignItems: "center",
   },
   verdictAuthentic: {
@@ -160,20 +160,20 @@ const styles = StyleSheet.create({
     border: "1 solid #f87171", // red-400
   },
   verdictTextAuthentic: {
-    fontSize: 11,
+    fontSize: 9,
     fontWeight: "bold",
     color: "#059669", // emerald-600
   },
   verdictTextManipulated: {
-    fontSize: 11,
+    fontSize: 9,
     fontWeight: "bold",
     color: "#dc2626", // red-600
   },
   // Resumen text
   summaryText: {
-    fontSize: 8,
+    fontSize: 7,
     color: "#334155",
-    lineHeight: 1.4,
+    lineHeight: 1.3,
     textAlign: "justify",
   },
   // Footer
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     paddingHorizontal: 40,
-    marginBottom: 15,
+    marginBottom: 10,
   },
   signatureBox: {
     alignItems: "center",
@@ -197,40 +197,40 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 1,
     backgroundColor: "#94a3b8",
-    marginBottom: 6,
+    marginBottom: 4,
   },
   signatureName: {
-    fontSize: 8,
+    fontSize: 7,
     fontWeight: "bold",
     color: "#0f172a",
   },
   signatureRole: {
-    fontSize: 7,
+    fontSize: 6,
     color: "#64748b",
   },
   // Sello Digital
   digitalSealContainer: {
     position: "absolute",
-    bottom: 60,
+    bottom: 50,
     right: 30,
     opacity: 0.10,
-    width: 100,
-    height: 100,
+    width: 80,
+    height: 80,
   },
   footerBar: {
     backgroundColor: "#0f172a",
-    padding: 8,
+    padding: 6,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
   footerText: {
     color: "#cbd5e1",
-    fontSize: 6,
+    fontSize: 5,
   },
   hashMono: {
     fontFamily: "Courier",
-    fontSize: 6,
+    fontSize: 5,
     color: "#60a5fa",
   }
 });
@@ -257,7 +257,7 @@ export const CertificadoPDF = ({ data, logoBase64, qrBase64 }: CertificadoPDFPro
 
   return (
     <Document>
-      <Page size="A4" style={styles.page}>
+      <Page size="LETTER" style={styles.page}>
         
         {/* HEADER */}
         <View style={styles.headerBar} />
@@ -342,20 +342,20 @@ export const CertificadoPDF = ({ data, logoBase64, qrBase64 }: CertificadoPDFPro
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>4. Interpretación del Score ELA</Text>
             </View>
-            <View style={{ backgroundColor: "#f8fafc", padding: 8, border: "1 solid #e2e8f0", borderRadius: 4, marginBottom: 6 }}>
-              <Text style={{ fontSize: 7, color: "#334155", lineHeight: 1.4, marginBottom: 4 }}>
+            <View style={{ backgroundColor: "#f8fafc", padding: 6, border: "1 solid #e2e8f0", borderRadius: 4, marginBottom: 4 }}>
+              <Text style={{ fontSize: 6, color: "#334155", lineHeight: 1.3, marginBottom: 3 }}>
                 <Text style={{fontWeight:"bold"}}>¿Qué es ELA?</Text> El Error Level Analysis analiza los niveles de compresión JPEG en toda la imagen. Si una sección fue editada, su nivel de compresión será diferente al resto, generando un contraste detectable.
               </Text>
-              <Text style={{ fontSize: 7, color: "#059669", marginBottom: 3 }}>
+              <Text style={{ fontSize: 6, color: "#059669", marginBottom: 2 }}>
                 <Text style={{fontWeight:"bold"}}>Rango NORMAL (0% – 18%):</Text> Compresión uniforme. Sin evidencia de manipulación.
               </Text>
-              <Text style={{ fontSize: 7, color: "#d97706", marginBottom: 3 }}>
+              <Text style={{ fontSize: 6, color: "#d97706", marginBottom: 2 }}>
                 <Text style={{fontWeight:"bold"}}>Rango SOSPECHOSO (18% – 50%):</Text> Variaciones moderadas. Posibles ediciones locales.
               </Text>
-              <Text style={{ fontSize: 7, color: "#dc2626", marginBottom: 4 }}>
+              <Text style={{ fontSize: 6, color: "#dc2626", marginBottom: 3 }}>
                 <Text style={{fontWeight:"bold"}}>Rango ALTERADO (50% – 100%):</Text> Alta probabilidad de manipulación o ensamblaje.
               </Text>
-              <Text style={{ fontSize: 7, color: "#334155", lineHeight: 1.4 }}>
+              <Text style={{ fontSize: 6, color: "#334155", lineHeight: 1.3 }}>
                 <Text style={{fontWeight:"bold"}}>Resultado de este análisis:</Text> La imagen obtuvo un score ELA de {elaScore.toFixed(2)}%, lo que corresponde a un nivel de riesgo <Text style={{fontWeight:"bold"}}>{riskLevel}</Text>. {elaScore > 50 ? "Este valor supera el umbral de alerta máxima y es un indicador contundente de alteración digital." : elaScore > 18 ? "Este valor supera el umbral de alerta media, lo que sugiere que la imagen pudo haber sido editada o guardada múltiples veces." : "Este valor se encuentra dentro del rango de seguridad, indicando que la compresión es consistente en toda la imagen."}
               </Text>
             </View>
@@ -366,13 +366,13 @@ export const CertificadoPDF = ({ data, logoBase64, qrBase64 }: CertificadoPDFPro
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>5. Huellas Digitales (Integridad del Archivo)</Text>
             </View>
-            <View style={{ backgroundColor: "#f8fafc", padding: 8, border: "1 solid #e2e8f0", borderRadius: 4, marginBottom: 4 }}>
-              <Text style={{ fontSize: 7, color: "#64748b", marginBottom: 4 }}>
+            <View style={{ backgroundColor: "#f8fafc", padding: 6, border: "1 solid #e2e8f0", borderRadius: 4, marginBottom: 3 }}>
+              <Text style={{ fontSize: 6, color: "#64748b", marginBottom: 3 }}>
                 Los hashes criptográficos son firmas digitales únicas. Si la imagen se modifica aunque sea un solo píxel, estos códigos cambian completamente.
               </Text>
-              <Text style={{ fontSize: 8, color: "#64748b", fontFamily: "Courier", marginBottom: 3 }}><Text style={{fontWeight:"bold", color:"#0f172a"}}>MD5:</Text> {hashes.md5 || "N/A"}</Text>
-              <Text style={{ fontSize: 8, color: "#64748b", fontFamily: "Courier", marginBottom: 3 }}><Text style={{fontWeight:"bold", color:"#0f172a"}}>SHA-1:</Text> {hashes.sha1 || "N/A"}</Text>
-              <Text style={{ fontSize: 8, color: "#64748b", fontFamily: "Courier" }}><Text style={{fontWeight:"bold", color:"#0f172a"}}>SHA-256:</Text> {hashes.sha256 || "N/A"}</Text>
+              <Text style={{ fontSize: 7, color: "#64748b", fontFamily: "Courier", marginBottom: 2 }}><Text style={{fontWeight:"bold", color:"#0f172a"}}>MD5:</Text> {hashes.md5 || "N/A"}</Text>
+              <Text style={{ fontSize: 7, color: "#64748b", fontFamily: "Courier", marginBottom: 2 }}><Text style={{fontWeight:"bold", color:"#0f172a"}}>SHA-1:</Text> {hashes.sha1 || "N/A"}</Text>
+              <Text style={{ fontSize: 7, color: "#64748b", fontFamily: "Courier" }}><Text style={{fontWeight:"bold", color:"#0f172a"}}>SHA-256:</Text> {hashes.sha256 || "N/A"}</Text>
             </View>
           </View>
 
@@ -384,8 +384,8 @@ export const CertificadoPDF = ({ data, logoBase64, qrBase64 }: CertificadoPDFPro
             <Text style={styles.summaryText}>
               {data.analysis.forensicReport?.resumen || "No hay resumen disponible."}
             </Text>
-            <View style={{ backgroundColor: "#f1f5f9", padding: 8, border: "1 solid #e2e8f0", borderRadius: 4, marginTop: 6 }}>
-              <Text style={{ fontSize: 7, color: "#475569", lineHeight: 1.4 }}>
+            <View style={{ backgroundColor: "#f1f5f9", padding: 6, border: "1 solid #e2e8f0", borderRadius: 4, marginTop: 4 }}>
+              <Text style={{ fontSize: 6, color: "#475569", lineHeight: 1.3 }}>
                 <Text style={{fontWeight:"bold"}}>Recomendación: </Text>
                 {data.analysis.forensicReport?.recomendacion || "Basado exclusivamente en los análisis automatizados del sistema."}
               </Text>
@@ -402,7 +402,7 @@ export const CertificadoPDF = ({ data, logoBase64, qrBase64 }: CertificadoPDFPro
           <View style={styles.signaturesContainer}>
             {/* Firma Analista */}
             <View style={styles.signatureBox}>
-              <Text style={{ fontFamily: "Courier", fontSize: 14, color: "#1e40af", marginBottom: 5, transform: "rotate(-5deg)", textAlign: "center" }}>
+              <Text style={{ fontFamily: "Courier", fontSize: 11, color: "#1e40af", marginBottom: 3, transform: "rotate(-5deg)", textAlign: "center" }}>
                 {data.analystName}
               </Text>
               <View style={styles.signatureLine} />
@@ -412,7 +412,7 @@ export const CertificadoPDF = ({ data, logoBase64, qrBase64 }: CertificadoPDFPro
 
             {/* Firma Director */}
             <View style={styles.signatureBox}>
-              <Text style={{ fontFamily: "Courier", fontSize: 16, color: "#0f172a", marginBottom: 5, transform: "rotate(-2deg)", textAlign: "center" }}>
+              <Text style={{ fontFamily: "Courier", fontSize: 13, color: "#0f172a", marginBottom: 3, transform: "rotate(-2deg)", textAlign: "center" }}>
                 A.F.D. Dir
               </Text>
               <View style={styles.signatureLine} />

@@ -8,11 +8,12 @@ import os
 import gc
 import tempfile
 from fastapi.staticfiles import StaticFiles
-from PIL.TiffTags import IFDRational
-
 def sanitize_for_json(obj):
-    if isinstance(obj, IFDRational):
-        return float(obj) if obj.denominator != 0 else 0.0
+    if type(obj).__name__ == "IFDRational":
+        try:
+            return float(obj)
+        except Exception:
+            return 0.0
     elif isinstance(obj, dict):
         return {k: sanitize_for_json(v) for k, v in obj.items()}
     elif isinstance(obj, list):

@@ -105,14 +105,17 @@ export default function CertificadosPage() {
       </div>
 
       <Dialog open={!!selectedPdf} onOpenChange={(open) => !open && setSelectedPdf(null)}>
-        <DialogContent className="max-w-4xl w-[90vw] h-[90vh] flex flex-col p-0 overflow-hidden">
-          <DialogHeader className="p-4 border-b">
-            <DialogTitle>Previsualización del Certificado</DialogTitle>
+        <DialogContent className="max-w-5xl w-[95vw] sm:w-[90vw] h-[90vh] flex flex-col p-0 overflow-hidden border-border/40 bg-background/70 backdrop-blur-2xl shadow-[0_0_50px_-12px_rgba(0,0,0,0.4)] sm:rounded-2xl">
+          <DialogHeader className="p-4 border-b border-border/40 bg-muted/20">
+            <DialogTitle className="text-lg font-bold tracking-tight text-foreground/90 flex items-center gap-2">
+              <Eye className="w-5 h-5 text-primary" />
+              Previsualización del Certificado Forense
+            </DialogTitle>
           </DialogHeader>
-          <div className="flex-1 bg-muted/20 w-full h-full relative">
+          <div className="flex-1 w-full h-full relative bg-zinc-950/5 dark:bg-zinc-950/50">
             {selectedPdf && (
               <iframe 
-                src={selectedPdf} 
+                src={`${selectedPdf}#toolbar=0`} 
                 className="w-full h-full border-0 absolute inset-0"
                 title="Certificado PDF"
               />
