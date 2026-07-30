@@ -47,8 +47,8 @@ export function Navbar() {
         transition={{ type: "spring", stiffness: 100, damping: 20 }}
         className={`fixed w-full top-0 z-50 transition-all duration-300 border-b ${
           isScrolled
-            ? "bg-background/70 backdrop-blur-xl border-border shadow-sm"
-            : "bg-background border-transparent"
+            ? "bg-background/80 backdrop-blur-xl border-border shadow-sm"
+            : "bg-transparent border-transparent"
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">

@@ -48,30 +48,29 @@ export async function POST(
       );
     }
 
-    // Guardar comprobante enviándolo al backend
-    const baseUrl = process.env.NEXT_PUBLIC_FORENSIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000";
-    const UPLOAD_API_URL = `${baseUrl}/upload`;
-
-    const backendFormData = new FormData();
-    backendFormData.append("file", paymentFile, paymentFile.name);
-    backendFormData.append("folder", `pagos/${auth.userId}`);
-
-    const uploadRes = await fetch(UPLOAD_API_URL, {
-      method: "POST",
-      body: backendFormData,
-    });
-
-    if (!uploadRes.ok) {
-      throw new Error(`Error al subir comprobante al backend: ${uploadRes.status}`);
+    // Subir comprobante a través del StorageProvider agnóstico
+    const buffer = Buffer.from(await paymentFile.arrayBuffer());
+    const sanitizedName = paymentFile.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const uniqueName = `${Date.now()}-${sanitizedName}`;
+    const folder = `pagos/${auth.userId}`;
+    
+    let paymentProofPath = "";
+    try {
+      const { storageService } = await import("@/app/lib/storage");
+      paymentProofPath = await storageService.uploadImage(buffer, uniqueName, folder);
+    } catch (uploadError) {
+      console.error("Error subiendo comprobante al storage provider:", uploadError);
+      return NextResponse.json(
+        { error: "Error al subir el comprobante al almacenamiento en la nube." },
+        { status: 500 }
+      );
     }
-
-    const uploadData = await uploadRes.json();
 
     // Actualizar evidencia con comprobante
     await prisma.evidence.update({
       where: { id },
       data: {
-        paymentProofPath: `${baseUrl}/uploads/${uploadData.filename}`, // URL absoluta para el frontend
+        paymentProofPath, // URL devuelta por el StorageProvider
         paymentVerified: false,
         status: "REVISANDO",
       },

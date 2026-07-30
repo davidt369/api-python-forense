@@ -46,65 +46,37 @@ export async function POST(
       data: { status: "REVISANDO" },
     });
 
-    // Usar la ruta del backend guardada en hash para el análisis
-    // Si no hay ruta de backend, subir el archivo local al backend primero
-    let filename = evidence.hash;
-    
-    if (!filename) {
-      // Intentar subir el archivo local al backend para análisis
-      const baseUrlUploads = process.env.NEXT_PUBLIC_FORENSIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000";
-      const UPLOAD_API_URL = `${baseUrl}/upload`;
-      
-      try {
-        // Leer el archivo local desde public/
+    // Descargar la imagen a memoria RAM para enviarla al analizador
+    let fileBuffer: Buffer;
+    try {
+      if (evidence.imagePath.startsWith("http")) {
+        // Es una URL externa (ej. Cloudinary)
+        const res = await fetch(evidence.imagePath);
+        if (!res.ok) throw new Error("No se pudo descargar la imagen remota");
+        fileBuffer = Buffer.from(await res.arrayBuffer());
+      } else {
+        // Es un archivo local (legacy)
         const localPath = path.join(process.cwd(), 'public', evidence.imagePath.replace(/^\//, ''));
-        const fileBuffer = await readFile(localPath);
-        
-        // Crear un blob y subirlo al backend
-        const uploadFormData = new FormData();
-        const blob = new Blob([fileBuffer]);
-        uploadFormData.append("file", blob, evidence.originalName);
-        uploadFormData.append("folder", `evidencias/${evidence.userId}`);
-        
-        const uploadRes = await fetch(UPLOAD_API_URL, {
-          method: "POST",
-          body: uploadFormData,
-        });
-        
-        if (uploadRes.ok) {
-          const uploadData = await uploadRes.json();
-          filename = uploadData.filename;
-          // Guardar la ruta del backend para futuros análisis
-          await prisma.evidence.update({
-            where: { id },
-            data: { hash: filename },
-          });
-        }
-      } catch (err) {
-        console.error("Error al subir archivo local al backend:", err);
-        return NextResponse.json(
-          { error: "No se pudo enviar la imagen al servidor de análisis forense." },
-          { status: 500 }
-        );
+        fileBuffer = await readFile(localPath);
       }
-    }
-
-    // Verificar que tengamos un filename antes de continuar
-    if (!filename) {
+    } catch (err) {
+      console.error("Error obteniendo el archivo de imagen:", err);
       return NextResponse.json(
-        { error: "No se pudo obtener la ruta de la imagen para el análisis. Verifica que el backend esté disponible." },
+        { error: "No se pudo obtener el archivo de imagen para el análisis." },
         { status: 500 }
       );
     }
 
-    // Llamar a la API forense externa
+    // Llamar a la API forense externa usando /analyze-file para que analice en memoria
+    const ANALYZE_FILE_URL = `${baseUrl}/analyze-file`;
     const formData = new FormData();
-    formData.append("filename", filename);
+    const blob = new Blob([new Uint8Array(fileBuffer)]);
+    formData.append("file", blob, evidence.originalName);
     formData.append("original_name", evidence.originalName);
 
     let forensicResult;
     try {
-      const response = await fetch(FORENSIC_API_URL, {
+      const response = await fetch(ANALYZE_FILE_URL, {
         method: "POST",
         body: formData,
       });

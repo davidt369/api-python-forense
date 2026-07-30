@@ -102,61 +102,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Guardar imagen en public/ para visualización local
+    // Subir imagen a través del StorageProvider agnóstico
     const buffer = Buffer.from(await file.arrayBuffer());
     const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
     const uniqueName = `${Date.now()}-${sanitizedName}`;
     const userFolder = `evidencias/${auth.userId}`;
-    const publicDir = path.join(process.cwd(), 'public', userFolder);
-    let localSaveSuccess = false;
+    
+    let finalImagePath = "";
     try {
-      if (!process.env.VERCEL) {
-        await mkdir(publicDir, { recursive: true });
-        const localPath = path.join(publicDir, uniqueName);
-        await writeFile(localPath, buffer);
-        localSaveSuccess = true;
-      }
-    } catch (fsError) {
-      console.warn("⚠️ No se pudo guardar la imagen localmente (posible entorno Serverless como Vercel):", fsError);
-    }
-
-    // También enviar al backend para que tenga el archivo para análisis
-    const baseUrl = process.env.NEXT_PUBLIC_FORENSIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000";
-    const UPLOAD_API_URL = `${baseUrl}/upload`;
-
-    let backendFilename = uniqueName;
-    try {
-      const backendFormData = new FormData();
-      backendFormData.append("file", file, file.name);
-      backendFormData.append("folder", userFolder);
-
-      const uploadRes = await fetch(UPLOAD_API_URL, {
-        method: "POST",
-        body: backendFormData,
-      });
-
-      if (uploadRes.ok) {
-        const uploadData = await uploadRes.json();
-        backendFilename = uploadData.filename;
-      }
-    } catch (err) {
-      console.warn("⚠️ No se pudo enviar la imagen al backend (el análisis forense podría no funcionar si el backend no está disponible):", err);
+      const { storageService } = await import("@/app/lib/storage");
+      finalImagePath = await storageService.uploadImage(buffer, uniqueName, userFolder);
+    } catch (uploadError) {
+      console.error("Error subiendo archivo al storage provider:", uploadError);
+      return NextResponse.json(
+        { error: "Error al subir el archivo al almacenamiento en la nube." },
+        { status: 500 }
+      );
     }
 
     // Los admins/revisores pueden subir para análisis rápido (sin pago)
     const isAdminOrRevisor = auth.role === "ADMIN" || auth.role === "REVISOR";
-    
-    // Si estamos en Vercel o no se guardó localmente, usamos la URL del backend
-    const finalImagePath = /* (process.env.VERCEL || !localSaveSuccess)
-      ? `${baseUrl}/uploads/${userFolder}/${backendFilename}`
-      : */ `/${userFolder}/${uniqueName}`;
 
     // Crear evidencia
     const evidence = await prisma.evidence.create({
       data: {
         userId: auth.userId,
-        imagePath: finalImagePath, // Ruta dinámica según entorno
-        hash: backendFilename, // Guardamos la ruta del backend para el análisis
+        imagePath: finalImagePath, // Ruta segura en Cloudinary
+        hash: null, // Ya no se guarda ruta local del backend
         originalName: file.name,
         description,
         status: isAdminOrRevisor ? "REVISANDO" : "PENDIENTE",
