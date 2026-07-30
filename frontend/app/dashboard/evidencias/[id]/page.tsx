@@ -9,7 +9,7 @@ import {
   Layers, Cpu, Copy, Target, Maximize2
 } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
+import { Card, CardContent } from "@/app/components/ui/card";
 import { Badge } from "@/app/components/ui/badge";
 import {
   Dialog,
@@ -20,7 +20,8 @@ import {
 import Link from "next/link";
 import MapViewDynamic from "@/components/MapViewDynamic";
 import EvidenceImage from "@/components/EvidenceImage";
-import { Skeleton } from "boneyard-js/react";
+import { motion, AnimatePresence } from "framer-motion";
+import { MagicCard } from "@/components/ui/magic-card";
 
 export default function EvidenceDetailPage() {
   const { id } = useParams();
@@ -51,20 +52,24 @@ export default function EvidenceDetailPage() {
   };
 
   const getStatusBadge = (status: string) => {
-    const config: Record<string, { label: string; variant: "warning" | "info" | "success" | "purple" }> = {
-      PENDIENTE: { label: "Pendiente", variant: "warning" },
-      REVISANDO: { label: "En Revisión", variant: "info" },
-      TERMINADO: { label: "Completado", variant: "success" },
-      RECEPCIONADO: { label: "Recepcionado", variant: "purple" },
+    const config: Record<string, { label: string; bg: string; text: string; border: string }> = {
+      PENDIENTE: { label: "Pendiente", bg: "bg-amber-500/10", text: "text-amber-500", border: "border-amber-500/20" },
+      REVISANDO: { label: "En Revisión", bg: "bg-sky-500/10", text: "text-sky-500", border: "border-sky-500/20" },
+      TERMINADO: { label: "Completado", bg: "bg-emerald-500/10", text: "text-emerald-500", border: "border-emerald-500/20" },
+      RECEPCIONADO: { label: "Recepcionado", bg: "bg-purple-500/10", text: "text-purple-500", border: "border-purple-500/20" },
     };
-    const c = config[status] || { label: status, variant: "default" as const };
-    return <Badge variant={c.variant}>{c.label}</Badge>;
+    const c = config[status] || { label: status, bg: "bg-muted", text: "text-muted-foreground", border: "border-border" };
+    return (
+      <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border shadow-sm ${c.bg} ${c.text} ${c.border}`}>
+        {c.label}
+      </span>
+    );
   };
 
   const getRiskLevel = (score: number) => {
-    if (score > 50) return { level: "ALTO", color: "text-red-400", bg: "bg-red-500/20" };
-    if (score > 18) return { level: "MEDIO", color: "text-amber-400", bg: "bg-amber-500/20" };
-    return { level: "BAJO", color: "text-emerald-400", bg: "bg-emerald-500/20" };
+    if (score > 50) return { level: "ALTO RIESGO", color: "text-red-500", bg: "bg-red-500/10", border: "border-red-500/20" };
+    if (score > 18) return { level: "MEDIO RIESGO", color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/20" };
+    return { level: "RIESGO BAJO", color: "text-emerald-500", bg: "bg-emerald-500/10", border: "border-emerald-500/20" };
   };
 
   const copyToClipboard = (text: string, label: string) => {
@@ -75,9 +80,35 @@ export default function EvidenceDetailPage() {
 
   if (loading) {
     return (
-      <Skeleton name="evidence-detail" loading={true}>
-        <div />
-      </Skeleton>
+      <div className="min-h-screen bg-background p-6 space-y-6 animate-pulse">
+        {/* Header skeleton */}
+        <div className="h-16 bg-card/80 border-b border-border/50 rounded-none flex items-center px-6 gap-4">
+          <div className="h-8 w-8 rounded-full bg-muted" />
+          <div className="h-4 w-48 rounded-md bg-muted" />
+        </div>
+        <div className="max-w-7xl mx-auto space-y-6">
+          {/* Top info row */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="h-64 rounded-3xl bg-muted/40" />
+            <div className="lg:col-span-2 space-y-4">
+              <div className="h-8 w-64 rounded-xl bg-muted/40" />
+              <div className="h-4 w-48 rounded-md bg-muted/30" />
+              <div className="grid grid-cols-3 gap-4">
+                <div className="h-20 rounded-2xl bg-muted/40" />
+                <div className="h-20 rounded-2xl bg-muted/40" />
+                <div className="h-20 rounded-2xl bg-muted/40" />
+              </div>
+              <div className="h-10 w-full rounded-xl bg-muted/30" />
+            </div>
+          </div>
+          {/* Chart skeleton */}
+          <div className="h-64 rounded-3xl bg-muted/40" />
+          {/* Metadata skeleton */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[...Array(4)].map((_, i) => <div key={i} className="h-24 rounded-2xl bg-muted/40" />)}
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -95,370 +126,467 @@ export default function EvidenceDetailPage() {
     ? JSON.parse(evidence.analysis.hashesData)
     : null;
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.05 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 260, damping: 20 } }
+  };
+
   return (
-    <Skeleton name="evidence-detail" loading={false}>
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl sticky top-0 z-50">
+      <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <Link href="/dashboard">
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="icon" className="hover:bg-muted/50 rounded-full h-8 w-8">
                 <ArrowLeft className="w-4 h-4" />
               </Button>
             </Link>
-            <div className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-primary" />
-              <span className="font-bold">Detalle de Evidencia</span>
+            <div className="flex items-center gap-2.5">
+              <div className="bg-primary/10 p-1.5 rounded-lg border border-primary/20">
+                <Shield className="w-4 h-4 text-primary" />
+              </div>
+              <span className="font-extrabold text-lg tracking-tight">Expediente <span className="text-muted-foreground font-mono font-normal">#{evidence.id.slice(-6)}</span></span>
             </div>
           </div>
           {getStatusBadge(evidence.status)}
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Info básica */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          <div className="lg:col-span-1">
-            <Card>
-              <CardContent className="p-2">
-                {evidence.imagePath ? (
-                  <div className="bg-muted rounded-xl overflow-hidden flex items-center justify-center p-4">
-                    <img
-                      src={evidence.imagePath || '/placeholder-image.svg'}
-                      alt={evidence.originalName}
-                      className="max-h-[400px] object-contain rounded-lg"
-                      onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-image.svg'; }}
-                    />
-                  </div>
-                ) : (
-                  <div className="aspect-square flex items-center justify-center bg-muted rounded-xl">
-                    <ImageIcon className="w-16 h-16 text-muted-foreground" />
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="lg:col-span-2 space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-primary" />
-                  Información de la Solicitud
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Archivo</p>
-                    <p className="font-medium text-sm">{evidence.originalName}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Estado</p>
-                    <div className="mt-1">{getStatusBadge(evidence.status)}</div>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Monto</p>
-                    <p className="font-medium">Bs. {evidence.amount.toFixed(2)}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Fecha Solicitud</p>
-                    <p className="font-medium text-sm">
-                      {new Date(evidence.createdAt).toLocaleDateString("es-BO")}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Pago</p>
-                    <p className="font-medium text-sm">
-                      {evidence.paymentVerified ? (
-                        <span className="text-emerald-400">Verificado</span>
-                      ) : (
-                        <span className="text-amber-400">Pendiente</span>
-                      )}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Certificado</p>
-                    <p className="font-medium text-sm">
-                      {evidence.certificate ? (
-                        <span className="text-emerald-400">Generado</span>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        {/* Resultados del análisis */}
-        {evidence.analysis && (
-          <div className="space-y-6 animate-fade-in">
-            {/* Veredicto */}
-            <Card className={`border ${evidence.analysis.elaResult === "AUTENTICA" ? "border-emerald-500/30" : "border-red-500/30"}`}>
-              <CardContent className="p-6">
-                <div className="flex items-start gap-4">
-                  {evidence.analysis.elaResult === "AUTENTICA" ? (
-                    <CheckCircle2 className="w-8 h-8 text-emerald-400 flex-shrink-0" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+          className="grid grid-cols-1 lg:grid-cols-12 gap-6"
+        >
+          {/* Main Visual Column */}
+          <motion.div variants={itemVariants} className="lg:col-span-4 flex flex-col gap-6">
+            <MagicCard gradientColor="rgba(var(--primary), 0.1)" className="border-border/40 overflow-hidden shadow-xl rounded-3xl h-full">
+              <div className="p-6 h-full flex flex-col">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4 flex items-center gap-2">
+                  <ImageIcon className="w-4 h-4" /> Visualización de Evidencia
+                </h3>
+                <div className="flex-1 bg-black/40 rounded-2xl overflow-hidden flex items-center justify-center p-2 relative group border border-border/50">
+                  {evidence.imagePath ? (
+                    <>
+                      <img
+                        src={evidence.imagePath || '/placeholder-image.svg'}
+                        alt={evidence.originalName}
+                        className="max-h-[350px] w-auto object-contain rounded-xl shadow-2xl transition-transform duration-500 group-hover:scale-105"
+                        onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-image.svg'; }}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                        <p className="text-xs text-white font-mono break-all">{evidence.originalName}</p>
+                      </div>
+                    </>
                   ) : (
-                    <AlertTriangle className="w-8 h-8 text-red-400 flex-shrink-0" />
+                    <div className="flex flex-col items-center justify-center text-muted-foreground">
+                      <ImageIcon className="w-12 h-12 mb-2 opacity-50" />
+                      <span className="text-xs">Imagen no disponible</span>
+                    </div>
                   )}
-                  <div>
-                    <h3 className={`text-xl font-bold mb-1 ${evidence.analysis.elaResult === "AUTENTICA" ? "text-emerald-400" : "text-red-400"}`}>
-                      {evidence.analysis.elaResult === "AUTENTICA"
-                        ? "IMAGEN APARENTEMENTE AUTÉNTICA"
-                        : "POSIBLE MANIPULACIÓN DETECTADA"}
-                    </h3>
-                    {forensicReport && (
-                      <p className="text-muted-foreground">{forensicReport.resumen}</p>
-                    )}
+                </div>
+              </div>
+            </MagicCard>
+          </motion.div>
+
+          {/* Details & Info Column */}
+          <motion.div variants={itemVariants} className="lg:col-span-8 flex flex-col gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 h-full">
+              {/* Context Info */}
+              <MagicCard gradientColor="rgba(var(--primary), 0.1)" className="border-border/40 overflow-hidden shadow-xl rounded-3xl h-full">
+                <div className="p-6 h-full flex flex-col">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-5 flex items-center gap-2">
+                    <FileText className="w-4 h-4" /> Metadatos del Caso
+                  </h3>
+                  <div className="space-y-4 flex-1">
+                    <div className="flex items-start justify-between border-b border-border/30 pb-3">
+                      <div>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Nombre Original</p>
+                        <p className="font-medium text-sm text-foreground">{evidence.originalName}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start justify-between border-b border-border/30 pb-3">
+                      <div>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Estado de Solicitud</p>
+                        <div className="mt-1">{getStatusBadge(evidence.status)}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-start justify-between border-b border-border/30 pb-3">
+                      <div>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Monto de Operación</p>
+                        <p className="font-mono text-sm">Bs. {evidence.amount.toFixed(2)}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Estado de Pago</p>
+                        <p className={`font-bold text-xs uppercase tracking-widest ${evidence.paymentVerified ? "text-emerald-500" : "text-amber-500"}`}>
+                          {evidence.paymentVerified ? "Verificado" : "Pendiente"}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start justify-between pt-1">
+                      <div>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Fecha de Registro</p>
+                        <p className="font-mono text-sm">
+                          {new Date(evidence.createdAt).toLocaleString("es-BO", { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }).replace('.', '')}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </MagicCard>
 
-            {/* Tabs de análisis */}
-            <div className="flex gap-2 overflow-x-auto pb-2">
-              {[
-                { id: "resumen", label: "Resumen", icon: BarChart3 },
-                { id: "exif", label: "EXIF/Metadatos", icon: Camera },
-                { id: "hashes", label: "Hashes", icon: Fingerprint },
-                { id: "tecnico", label: "Datos Técnicos", icon: Activity },
-              ].map((tab) => {
-                const Icon = tab.icon;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
-                      activeTab === tab.id
-                        ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-                        : "text-muted-foreground hover:text-foreground bg-card hover:bg-card/80"
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    {tab.label}
-                  </button>
-                );
-              })}
+              {/* Veredicto Banner */}
+              {evidence.analysis ? (
+                <MagicCard 
+                  gradientColor={evidence.analysis.elaResult === "AUTENTICA" ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.15)"} 
+                  className={`border overflow-hidden shadow-xl rounded-3xl h-full transition-colors ${evidence.analysis.elaResult === "AUTENTICA" ? "border-emerald-500/30" : "border-red-500/30"}`}
+                >
+                  <div className="p-6 h-full flex flex-col justify-center">
+                    <div className="flex flex-col items-center text-center gap-4">
+                      <div className={`p-5 rounded-full ${evidence.analysis.elaResult === "AUTENTICA" ? "bg-emerald-500/10 text-emerald-500 shadow-[0_0_30px_rgba(16,185,129,0.3)]" : "bg-red-500/10 text-red-500 shadow-[0_0_30px_rgba(239,68,68,0.3)]"}`}>
+                        {evidence.analysis.elaResult === "AUTENTICA" ? (
+                          <CheckCircle2 className="w-12 h-12" />
+                        ) : (
+                          <AlertTriangle className="w-12 h-12" />
+                        )}
+                      </div>
+                      <div>
+                        <h3 className={`text-xl font-black uppercase tracking-tight mb-2 ${evidence.analysis.elaResult === "AUTENTICA" ? "text-emerald-500" : "text-red-500"}`}>
+                          {evidence.analysis.elaResult === "AUTENTICA"
+                            ? "Evidencia Auténtica"
+                            : "Manipulación Detectada"}
+                        </h3>
+                        {forensicReport && (
+                          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
+                            {forensicReport.resumen}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </MagicCard>
+              ) : (
+                <MagicCard gradientColor="rgba(var(--primary), 0.1)" className="border-border/40 overflow-hidden shadow-xl rounded-3xl h-full flex items-center justify-center">
+                  <div className="p-6 text-center text-muted-foreground">
+                    <Clock className="w-10 h-10 mx-auto mb-3 opacity-50" />
+                    <p className="font-bold text-foreground">Análisis Pendiente</p>
+                    <p className="text-xs mt-1">Esperando procesamiento de motores forenses.</p>
+                  </div>
+                </MagicCard>
+              )}
             </div>
+          </motion.div>
 
-            {/* Resumen */}
-            {activeTab === "resumen" && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="w-5 h-5 text-cyan-400" />
-                    Resumen del Análisis
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-muted/50 p-4 rounded-xl">
-                      <p className="text-xs text-muted-foreground">Score ELA</p>
-                      <p className="text-2xl font-bold">
-                        {evidence.analysis.elaScore !== null && evidence.analysis.elaScore !== undefined 
-                          ? `${Number(evidence.analysis.elaScore).toFixed(2)}%` 
-                          : "N/A"}
-                      </p>
-                    </div>
-                    <div className="bg-muted/50 p-4 rounded-xl">
-                      <p className="text-xs text-muted-foreground">Nivel de Riesgo</p>
-                      <p className={`text-2xl font-bold ${getRiskLevel(evidence.analysis.elaScore || 0).color}`}>
-                        {getRiskLevel(evidence.analysis.elaScore || 0).level}
-                      </p>
-                    </div>
-                    <div className="bg-muted/50 p-4 rounded-xl">
-                      <p className="text-xs text-muted-foreground">Analizado por</p>
-                      <p className="text-sm font-medium">{evidence.analysis.analyst?.name || "Sistema"}</p>
-                    </div>
-                    <div className="bg-muted/50 p-4 rounded-xl">
-                      <p className="text-xs text-muted-foreground">Fecha Análisis</p>
-                      <p className="text-sm font-medium">
-                        {new Date(evidence.analysis.createdAt).toLocaleDateString("es-BO")}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+          {/* Analysis Results Tabs */}
+          {evidence.analysis && (
+            <motion.div variants={itemVariants} className="lg:col-span-12 mt-4 space-y-6">
+              {/* Tabs Container */}
+              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                {[
+                  { id: "resumen", label: "Resumen Forense", icon: BarChart3 },
+                  { id: "exif", label: "Metadatos EXIF", icon: Camera },
+                  { id: "hashes", label: "Firmas Digitales", icon: Fingerprint },
+                ].map((tab) => {
+                  const Icon = tab.icon;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-bold transition-all whitespace-nowrap border ${
+                        activeTab === tab.id
+                          ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/25 scale-[1.02]"
+                          : "text-muted-foreground border-border/40 hover:text-foreground bg-card/50 hover:bg-card hover:border-border"
+                      }`}
+                    >
+                      <Icon className="w-4 h-4" />
+                      {tab.label}
+                    </button>
+                  );
+                })}
+              </div>
 
-            {/* EXIF */}
-            {activeTab === "exif" && exifData && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Camera className="w-5 h-5 text-blue-400" />
-                    Metadatos EXIF
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {exifData.camera && (
-                      <div className="bg-muted/50 p-4 rounded-xl">
-                        <p className="text-xs text-muted-foreground mb-2 font-semibold text-blue-400">Cámara</p>
-                        <div className="space-y-1 text-sm">
-                          <p><span className="text-muted-foreground">Fabricante:</span> {exifData.camera.make || "N/A"}</p>
-                          <p><span className="text-muted-foreground">Modelo:</span> {exifData.camera.model || "N/A"}</p>
-                          <p><span className="text-muted-foreground">Lente:</span> {exifData.camera.lens || "N/A"}</p>
+              {/* Tab Content area */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {/* Resumen Tab */}
+                  {activeTab === "resumen" && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                      <MagicCard gradientColor="rgba(var(--primary), 0.1)" className="border-border/40 rounded-3xl overflow-hidden shadow-lg p-5">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Score ELA</p>
+                            <p className="text-3xl font-black text-foreground">
+                              {evidence.analysis.elaScore !== null && evidence.analysis.elaScore !== undefined 
+                                ? `${Number(evidence.analysis.elaScore).toFixed(2)}%` 
+                                : "N/A"}
+                            </p>
+                          </div>
+                          <div className="p-3 bg-cyan-500/10 rounded-2xl text-cyan-500 border border-cyan-500/20">
+                            <Layers className="w-6 h-6" />
+                          </div>
                         </div>
-                      </div>
-                    )}
-                    {exifData.dates && (
-                      <div className="bg-muted/50 p-4 rounded-xl">
-                        <p className="text-xs text-muted-foreground mb-2 font-semibold text-amber-400">Fechas</p>
-                        <div className="space-y-1 text-sm">
-                          <p><span className="text-muted-foreground">Creación:</span> {exifData.dates.create_date || "N/A"}</p>
-                          <p><span className="text-muted-foreground">Original:</span> {exifData.dates.datetime_original || "N/A"}</p>
+                      </MagicCard>
+                      
+                      <MagicCard gradientColor="rgba(var(--primary), 0.1)" className="border-border/40 rounded-3xl overflow-hidden shadow-lg p-5">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Nivel Riesgo</p>
+                            <p className={`text-xl font-black uppercase tracking-tight ${getRiskLevel(evidence.analysis.elaScore || 0).color}`}>
+                              {getRiskLevel(evidence.analysis.elaScore || 0).level}
+                            </p>
+                          </div>
+                          <div className={`p-3 rounded-2xl ${getRiskLevel(evidence.analysis.elaScore || 0).bg} ${getRiskLevel(evidence.analysis.elaScore || 0).color} border ${getRiskLevel(evidence.analysis.elaScore || 0).border}`}>
+                            <Target className="w-6 h-6" />
+                          </div>
                         </div>
-                      </div>
-                    )}
-                    {exifData.gps && (
-                      <div className="lg:col-span-2 bg-muted/50 p-4 rounded-xl">
-                        <div className="flex items-center justify-between mb-3">
-                          <p className="text-xs text-muted-foreground font-semibold text-green-400">GPS — Ubicación del dispositivo</p>
-                          <button
-                            onClick={() => setShowMapPreview(true)}
-                            className="text-xs text-primary hover:text-primary/80 flex items-center gap-1 transition-colors"
-                          >
-                            <Maximize2 className="w-3 h-3" />
-                            Ver mapa completo
-                          </button>
+                      </MagicCard>
+
+                      <MagicCard gradientColor="rgba(var(--primary), 0.1)" className="border-border/40 rounded-3xl overflow-hidden shadow-lg p-5">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Analizado por</p>
+                            <p className="text-lg font-bold text-foreground">
+                              {evidence.analysis.analyst?.name || "Motor Automático"}
+                            </p>
+                          </div>
+                          <div className="p-3 bg-purple-500/10 rounded-2xl text-purple-500 border border-purple-500/20">
+                            <Cpu className="w-6 h-6" />
+                          </div>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-                          <p className="text-sm"><span className="text-muted-foreground">Latitud:</span> {exifData.gps.latitude || "N/A"}</p>
-                          <p className="text-sm"><span className="text-muted-foreground">Longitud:</span> {exifData.gps.longitude || "N/A"}</p>
-                          <p className="text-sm"><span className="text-muted-foreground">Altitud:</span> {exifData.gps.altitude ? `${exifData.gps.altitude}m` : "N/A"}</p>
+                      </MagicCard>
+
+                      <MagicCard gradientColor="rgba(var(--primary), 0.1)" className="border-border/40 rounded-3xl overflow-hidden shadow-lg p-5">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Timestamp</p>
+                            <p className="text-sm font-mono font-bold text-foreground">
+                              {new Date(evidence.analysis.createdAt).toLocaleString("es-BO", { day: '2-digit', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' }).replace('.', '')}
+                            </p>
+                          </div>
+                          <div className="p-3 bg-slate-500/10 rounded-2xl text-slate-400 border border-slate-500/20">
+                            <Clock className="w-6 h-6" />
+                          </div>
                         </div>
-                        <div className="h-[250px] w-full overflow-hidden rounded-xl border border-border">
-                          <MapViewDynamic
-                            locations={[
-                              {
-                                lat: exifData.gps.latitude,
-                                lng: exifData.gps.longitude,
-                                name: evidence.originalName,
-                                evidenceId: evidence.id,
-                                elaResult: evidence.analysis?.elaResult,
-                              },
-                            ]}
-                            height="250px"
-                            single
-                          />
-                        </div>
-                      </div>
-                    )}
-                    {!exifData?.gps && (
-                      <div className="bg-muted/50 p-4 rounded-xl">
-                        <p className="text-xs text-muted-foreground mb-2 font-semibold text-muted-foreground">GPS</p>
-                        <p className="text-sm text-muted-foreground">No hay datos de ubicación disponibles</p>
-                      </div>
-                    )}
-                  </div>
-                  {exifData.software && (
-                    <div className="mt-4 bg-muted/50 p-4 rounded-xl">
-                      <p className="text-xs text-muted-foreground mb-2 font-semibold text-purple-400">Software</p>
-                      <p className="text-sm">{exifData.software.software || "No detectado"}</p>
+                      </MagicCard>
                     </div>
                   )}
-                </CardContent>
-              </Card>
-            )}
 
-            {/* Hashes */}
-            {activeTab === "hashes" && hashesData && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Fingerprint className="w-5 h-5 text-amber-400" />
-                    Huellas Digitales
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {hashesData.cryptographic && (
-                    <div className="mb-6">
-                      <h4 className="text-sm font-semibold text-amber-400 mb-3">Hashes Criptográficos</h4>
-                      <div className="space-y-3">
-                        {Object.entries(hashesData.cryptographic).map(([key, value]) => (
-                          <div key={key} className="bg-muted/50 p-3 rounded-xl">
-                            <div className="flex justify-between items-center mb-1">
-                              <span className="text-xs font-medium uppercase text-muted-foreground">{key}</span>
+                  {/* EXIF Tab */}
+                  {activeTab === "exif" && exifData && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="md:col-span-1 space-y-6">
+                        {exifData.camera && (
+                          <MagicCard gradientColor="rgba(var(--primary), 0.1)" className="border-border/40 rounded-3xl shadow-lg p-6">
+                            <h4 className="text-xs font-bold uppercase tracking-widest text-blue-500 mb-4 flex items-center gap-2">
+                              <Camera className="w-4 h-4" /> Datos de Cámara
+                            </h4>
+                            <div className="space-y-3">
+                              <div className="flex justify-between border-b border-border/30 pb-2">
+                                <span className="text-xs text-muted-foreground">Fabricante</span>
+                                <span className="text-xs font-medium text-foreground">{exifData.camera.make || "Desconocido"}</span>
+                              </div>
+                              <div className="flex justify-between border-b border-border/30 pb-2">
+                                <span className="text-xs text-muted-foreground">Modelo</span>
+                                <span className="text-xs font-medium text-foreground">{exifData.camera.model || "Desconocido"}</span>
+                              </div>
+                              <div className="flex justify-between pt-1">
+                                <span className="text-xs text-muted-foreground">Lente</span>
+                                <span className="text-xs font-medium text-foreground">{exifData.camera.lens || "No detectado"}</span>
+                              </div>
+                            </div>
+                          </MagicCard>
+                        )}
+                        
+                        {exifData.dates && (
+                          <MagicCard gradientColor="rgba(var(--primary), 0.1)" className="border-border/40 rounded-3xl shadow-lg p-6">
+                            <h4 className="text-xs font-bold uppercase tracking-widest text-amber-500 mb-4 flex items-center gap-2">
+                              <Clock className="w-4 h-4" /> Timestamps Internos
+                            </h4>
+                            <div className="space-y-3">
+                              <div className="flex justify-between border-b border-border/30 pb-2">
+                                <span className="text-xs text-muted-foreground">Creación</span>
+                                <span className="text-xs font-mono font-medium text-foreground">{exifData.dates.create_date || "N/A"}</span>
+                              </div>
+                              <div className="flex justify-between pt-1">
+                                <span className="text-xs text-muted-foreground">Modificación</span>
+                                <span className="text-xs font-mono font-medium text-foreground">{exifData.dates.datetime_original || "N/A"}</span>
+                              </div>
+                            </div>
+                          </MagicCard>
+                        )}
+                      </div>
+
+                      <div className="md:col-span-2">
+                        {exifData.gps ? (
+                          <MagicCard gradientColor="rgba(var(--primary), 0.1)" className="border-border/40 rounded-3xl shadow-lg p-6 h-full flex flex-col">
+                            <div className="flex items-center justify-between mb-4">
+                              <h4 className="text-xs font-bold uppercase tracking-widest text-emerald-500 flex items-center gap-2">
+                                <MapPin className="w-4 h-4" /> Ubicación GPS Extraída
+                              </h4>
                               <button
-                                onClick={() => copyToClipboard(value as string, key)}
-                                className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
+                                onClick={() => setShowMapPreview(true)}
+                                className="text-xs font-bold text-primary hover:text-primary/80 flex items-center gap-1 transition-colors bg-primary/10 px-3 py-1.5 rounded-full"
                               >
-                                {copiedHash === key ? (
-                                  <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                                ) : (
-                                  <Copy className="w-3 h-3" />
-                                )}
-                                {copiedHash === key ? "Copiado" : "Copiar"}
+                                <Maximize2 className="w-3 h-3" />
+                                Ampliar Mapa
                               </button>
                             </div>
-                            <p className="font-mono text-xs break-all">{value as string}</p>
-                          </div>
-                        ))}
+                            
+                            <div className="grid grid-cols-3 gap-2 mb-4 bg-muted/30 p-3 rounded-2xl border border-border/50">
+                              <div>
+                                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Latitud</p>
+                                <p className="text-xs font-mono text-foreground">{exifData.gps.latitude || "N/A"}</p>
+                              </div>
+                              <div>
+                                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Longitud</p>
+                                <p className="text-xs font-mono text-foreground">{exifData.gps.longitude || "N/A"}</p>
+                              </div>
+                              <div>
+                                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Altitud</p>
+                                <p className="text-xs font-mono text-foreground">{exifData.gps.altitude ? `${exifData.gps.altitude}m` : "N/A"}</p>
+                              </div>
+                            </div>
+                            
+                            <div className="flex-1 min-h-[250px] w-full overflow-hidden rounded-2xl border border-border/50 shadow-inner">
+                              <MapViewDynamic
+                                locations={[
+                                  {
+                                    lat: exifData.gps.latitude,
+                                    lng: exifData.gps.longitude,
+                                    name: evidence.originalName,
+                                    evidenceId: evidence.id,
+                                    elaResult: evidence.analysis?.elaResult,
+                                  },
+                                ]}
+                                height="100%"
+                                single
+                              />
+                            </div>
+                          </MagicCard>
+                        ) : (
+                          <MagicCard gradientColor="rgba(var(--primary), 0.1)" className="border-border/40 rounded-3xl shadow-lg p-6 h-full flex items-center justify-center flex-col text-muted-foreground">
+                            <MapPin className="w-12 h-12 mb-4 opacity-20" />
+                            <p className="font-bold text-foreground">GPS No Disponible</p>
+                            <p className="text-sm mt-1">Los metadatos no contienen coordenadas geográficas válidas.</p>
+                          </MagicCard>
+                        )}
                       </div>
                     </div>
                   )}
-                </CardContent>
-              </Card>
-            )}
 
-            {/* Certificado */}
-            {evidence.certificate && (
-              <Card className="border-forensic-gold/30">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <QrCode className="w-5 h-5 text-forensic-gold" />
-                    Certificado Digital
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col md:flex-row gap-6 items-center">
-                    <div className="bg-white p-4 rounded-2xl">
-                      <QrCode className="w-32 h-32 text-black" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium">Certificado generado exitosamente</p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Hash: <span className="font-mono text-xs">{evidence.certificate.certificateHash.substring(0, 20)}...</span>
-                      </p>
-                      <div className="flex gap-3 mt-4">
-                        <a
-                          href={`/api/evidencias/${evidence.id}/certificado`}
-                          download
-                        >
-                          <Button variant="outline" size="sm">
-                            <Download className="w-4 h-4" />
-                            Descargar PDF
-                          </Button>
-                        </a>
-                        <Button size="sm" onClick={() => setShowPreview(true)}>
-                          <Eye className="w-4 h-4" />
-                          Ver Certificado
-                        </Button>
+                  {/* Hashes Tab */}
+                  {activeTab === "hashes" && hashesData && (
+                    <MagicCard gradientColor="rgba(var(--primary), 0.1)" className="border-border/40 rounded-3xl shadow-lg p-6 md:p-8">
+                      <div className="max-w-3xl mx-auto">
+                        <div className="text-center mb-8">
+                          <div className="inline-flex items-center justify-center p-4 bg-amber-500/10 text-amber-500 rounded-2xl mb-4 border border-amber-500/20">
+                            <Fingerprint className="w-8 h-8" />
+                          </div>
+                          <h3 className="text-2xl font-black text-foreground">Firmas Criptográficas</h3>
+                          <p className="text-sm text-muted-foreground mt-2">Identificadores únicos generados para garantizar la cadena de custodia y no repudio.</p>
+                        </div>
+                        
+                        {hashesData.cryptographic && (
+                          <div className="space-y-4">
+                            {Object.entries(hashesData.cryptographic).map(([key, value]) => (
+                              <div key={key} className="bg-card/50 border border-border/60 p-4 rounded-2xl hover:border-primary/50 transition-colors group flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1.5">
+                                    <div className="w-2 h-2 rounded-full bg-primary/50" />
+                                    <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{key}</span>
+                                  </div>
+                                  <p className="font-mono text-sm break-all text-foreground/90 group-hover:text-primary transition-colors">{value as string}</p>
+                                </div>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => copyToClipboard(value as string, key)}
+                                  className={`flex-shrink-0 border-border/50 rounded-xl transition-all ${copiedHash === key ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/30" : "hover:bg-primary hover:text-primary-foreground"}`}
+                                >
+                                  {copiedHash === key ? (
+                                    <><CheckCircle2 className="w-4 h-4 mr-2" /> Copiado</>
+                                  ) : (
+                                    <><Copy className="w-4 h-4 mr-2" /> Copiar Hash</>
+                                  )}
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
+                    </MagicCard>
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            </motion.div>
+          )}
+
+          {/* Certificate Generation Banner */}
+          {evidence.certificate && (
+            <motion.div variants={itemVariants} className="lg:col-span-12 mt-4">
+              <MagicCard gradientColor="rgba(251, 191, 36, 0.15)" className="border-amber-500/30 rounded-3xl shadow-xl overflow-hidden bg-amber-500/5">
+                <div className="p-6 md:p-8 flex flex-col md:flex-row gap-8 items-center">
+                  <div className="bg-white p-4 rounded-3xl shadow-lg border-4 border-amber-500/20 transform rotate-3 hover:rotate-0 transition-transform">
+                    <QrCode className="w-32 h-32 text-black" />
+                  </div>
+                  <div className="flex-1 text-center md:text-left">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/20 text-amber-600 rounded-full text-xs font-bold uppercase tracking-wider mb-3 border border-amber-500/30">
+                      <Shield className="w-3.5 h-3.5" /> Documento Legal
+                    </div>
+                    <h3 className="text-2xl font-black text-foreground mb-2">Certificado Forense Emitido</h3>
+                    <p className="text-sm text-muted-foreground max-w-xl">
+                      Se ha generado un documento oficial que certifica los resultados de este análisis. 
+                      Hash de verificación: <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">{evidence.certificate.certificateHash.substring(0, 16)}...</span>
+                    </p>
+                    <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-6">
+                      <Button size="lg" className="rounded-xl font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/20" onClick={() => setShowPreview(true)}>
+                        <Eye className="w-5 h-5 mr-2" />
+                        Visualizar Certificado
+                      </Button>
+                      <a href={`/api/evidencias/${evidence.id}/certificado`} download>
+                        <Button variant="outline" size="lg" className="rounded-xl font-bold border-amber-500/30 hover:bg-amber-500/10 text-amber-600">
+                          <Download className="w-5 h-5 mr-2" />
+                          Descargar PDF
+                        </Button>
+                      </a>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        )}
+                </div>
+              </MagicCard>
+            </motion.div>
+          )}
+
+        </motion.div>
       </div>
 
       {evidence?.certificate && (
         <Dialog open={showPreview} onOpenChange={setShowPreview}>
-          <DialogContent className="max-w-4xl w-[90vw] h-[90vh] flex flex-col p-0 overflow-hidden">
-            <DialogHeader className="p-4 border-b">
-              <DialogTitle>Previsualización del Certificado</DialogTitle>
+          <DialogContent className="max-w-5xl w-[95vw] h-[95vh] flex flex-col p-0 overflow-hidden bg-card/95 backdrop-blur-3xl border-border/50 rounded-[2rem]">
+            <DialogHeader className="p-5 border-b border-border/40 flex-shrink-0 bg-muted/30">
+              <DialogTitle className="flex items-center gap-2 text-xl font-bold">
+                <QrCode className="w-5 h-5 text-amber-500" />
+                Previsualización de Certificado Legal
+              </DialogTitle>
             </DialogHeader>
-            <div className="flex-1 bg-muted/20 w-full h-full relative">
+            <div className="flex-1 w-full h-full relative p-4 bg-black/5">
               <iframe 
                 src={`/api/evidencias/${evidence.id}/certificado`}
-                className="w-full h-full border-0 absolute inset-0"
+                className="w-full h-full border-0 rounded-2xl shadow-inner bg-white"
                 title="Certificado PDF"
               />
             </div>
@@ -466,15 +594,18 @@ export default function EvidenceDetailPage() {
         </Dialog>
       )}
 
-      {/* Mapa completo */}
+      {/* Mapa completo dialog */}
       {exifData?.gps && (
         <Dialog open={showMapPreview} onOpenChange={setShowMapPreview}>
-          <DialogContent className="max-w-5xl w-[90vw] h-[85vh] flex flex-col p-0 overflow-hidden">
-            <DialogHeader className="p-4 border-b flex-shrink-0">
-              <DialogTitle>Ubicación GPS — {evidence.originalName}</DialogTitle>
+          <DialogContent className="max-w-6xl w-[95vw] h-[90vh] flex flex-col p-0 overflow-hidden bg-card/95 backdrop-blur-3xl border-border/50 rounded-[2rem]">
+            <DialogHeader className="p-5 border-b border-border/40 flex-shrink-0 bg-muted/30">
+              <DialogTitle className="flex items-center gap-2 text-xl font-bold">
+                <MapPin className="w-5 h-5 text-emerald-500" />
+                Ubicación Satelital — {evidence.originalName}
+              </DialogTitle>
             </DialogHeader>
-            <div className="flex-1 w-full min-h-0 relative">
-              <div className="absolute inset-0 m-2">
+            <div className="flex-1 w-full min-h-0 relative p-4 bg-black/5">
+              <div className="w-full h-full rounded-2xl overflow-hidden border border-border/50 shadow-inner">
                 <MapViewDynamic
                   locations={[
                     {
@@ -494,6 +625,5 @@ export default function EvidenceDetailPage() {
         </Dialog>
       )}
     </div>
-    </Skeleton>
   );
 }

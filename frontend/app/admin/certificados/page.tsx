@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { FileBadge, Download, Eye, QrCode } from "lucide-react";
+import { FileBadge, Download, Eye, QrCode, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import {
   Dialog,
@@ -15,6 +15,8 @@ export default function CertificadosPage() {
   const [evidencias, setEvidencias] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPdf, setSelectedPdf] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(3);
 
   useEffect(() => {
     const fetchEvidencias = async () => {
@@ -49,7 +51,19 @@ export default function CertificadosPage() {
         </div>
 
         {loading ? (
-          <div className="text-center py-10 text-muted-foreground">Cargando certificados...</div>
+          <div className="divide-y divide-border">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="flex items-center gap-4 px-4 py-3 animate-pulse">
+                <div className="h-4 w-64 rounded-md bg-muted" />
+                <div className="h-4 w-48 rounded-md bg-muted flex-1" />
+                <div className="h-4 w-24 rounded-md bg-muted/60" />
+                <div className="flex gap-2 ml-auto">
+                  <div className="h-8 w-8 rounded-md bg-muted" />
+                  <div className="h-8 w-8 rounded-md bg-muted" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : evidencias.length === 0 ? (
           <div className="text-center py-10 bg-muted/20 rounded-xl border border-dashed border-border flex flex-col items-center">
             <QrCode className="w-10 h-10 text-muted-foreground mb-3" />
@@ -70,7 +84,7 @@ export default function CertificadosPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {evidencias.map((evidence) => (
+                {evidencias.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((evidence) => (
                   <tr key={evidence.id} className="hover:bg-muted/30 transition-colors">
                     <td className="px-4 py-3 font-mono text-xs font-medium text-primary">
                       {evidence.certificate.certificateHash.substring(0, 32)}...
@@ -100,6 +114,51 @@ export default function CertificadosPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {/* Pagination Controls */}
+        {!loading && evidencias.length > 0 && (
+          <div className="p-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 bg-card/20 rounded-b-lg mt-0 border-x">
+            <div className="flex items-center gap-3">
+              <p className="text-xs text-muted-foreground">
+                Mostrando <span className="font-bold text-foreground">{(currentPage - 1) * itemsPerPage + 1}</span> a <span className="font-bold text-foreground">{Math.min(currentPage * itemsPerPage, evidencias.length)}</span> de <span className="font-bold text-foreground">{evidencias.length}</span>
+              </p>
+              <select
+                value={itemsPerPage === evidencias.length && evidencias.length > 10 ? "all" : itemsPerPage}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === "all") setItemsPerPage(evidencias.length);
+                  else setItemsPerPage(Number(val));
+                }}
+                className="h-7 text-xs rounded-md border border-border/50 bg-background px-2 text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+              >
+                <option value={3}>3 por pág.</option>
+                <option value={5}>5 por pág.</option>
+                <option value={10}>10 por pág.</option>
+                <option value="all">Todos</option>
+              </select>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="p-1.5 rounded-md hover:bg-muted text-muted-foreground disabled:opacity-50 disabled:hover:bg-transparent transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <span className="text-xs font-bold text-foreground bg-muted/50 px-3 py-1 rounded-md border border-border/50">
+                {currentPage} / {Math.ceil(evidencias.length / itemsPerPage) || 1}
+              </span>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(evidencias.length / itemsPerPage) || 1))}
+                disabled={currentPage === (Math.ceil(evidencias.length / itemsPerPage) || 1)}
+                className="p-1.5 rounded-md hover:bg-muted text-muted-foreground disabled:opacity-50 disabled:hover:bg-transparent transition-colors"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         )}
       </div>

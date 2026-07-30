@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Sun, Moon, ArrowRight } from "lucide-react";
+import { Menu, X, Sun, Moon, ArrowRight, Download } from "lucide-react";
 import { Button, buttonVariants } from "@/app/components/ui/button";
 import { cn } from "@/app/lib/utils";
 
@@ -15,6 +15,8 @@ export function Navbar() {
   const [user, setUser] = useState<any>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -28,9 +30,35 @@ export function Navbar() {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
+
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    const handleAppInstalled = () => {
+      setDeferredPrompt(null);
+    };
+
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    window.addEventListener("appinstalled", handleAppInstalled);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.removeEventListener("appinstalled", handleAppInstalled);
+    };
   }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === "accepted") {
+      setDeferredPrompt(null);
+    }
+  };
 
   const dashboardPath =
     user?.role === "ADMIN" || user?.role === "PERITO"
@@ -106,6 +134,17 @@ export function Navbar() {
             </Button>
 
             <div className="hidden sm:flex items-center gap-3">
+              {deferredPrompt && (
+                <Button
+                  onClick={handleInstallClick}
+                  variant="outline"
+                  size="sm"
+                  className="border-primary/30 text-primary hover:bg-primary/10 font-bold px-4 h-10 rounded-md transition-all shadow-sm"
+                >
+                  <Download className="w-4 h-4 mr-1.5" />
+                  Descargar App
+                </Button>
+              )}
               {user ? (
                 <Link href={dashboardPath} className={cn(buttonVariants({ size: "sm" }), "bg-primary hover:bg-primary/90 text-primary-foreground font-bold border-0 px-5 h-10 rounded-md transition-all shadow-md")}>
                   Ir al Panel
@@ -158,6 +197,15 @@ export function Navbar() {
             ))}
 
             <div className="pt-4 border-t border-border flex flex-col gap-3">
+              {deferredPrompt && (
+                <Button
+                  onClick={handleInstallClick}
+                  className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold h-12 text-base"
+                >
+                  <Download className="w-5 h-5 mr-2" />
+                  Instalar Aplicación
+                </Button>
+              )}
               {user ? (
                 <Link href={dashboardPath} onClick={() => setIsMenuOpen(false)} className={cn(buttonVariants(), "w-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold h-12 text-base")}>
                   Ir al Panel
