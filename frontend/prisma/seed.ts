@@ -1,7 +1,6 @@
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 import { PrismaLibSql } from "@prisma/adapter-libsql";
-import { createClient } from "@libsql/client";
 import { hashSync } from "bcryptjs";
 
 const url = (process.env.TURSO_DATABASE_URL || process.env.DATABASE_URL || "file:./dev.db") as string;
