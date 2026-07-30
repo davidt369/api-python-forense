@@ -6,6 +6,7 @@ import {
   View,
   StyleSheet,
   Image,
+  Font,
 } from "@react-pdf/renderer";
 
 export interface CertificadoData {
@@ -310,10 +311,10 @@ export const CertificadoPDF = ({ data, logoBase64, qrBase64 }: CertificadoPDFPro
             />
           </View>
 
-          {/* VEREDICTO */}
+          {/* RESULTADOS DEL ANÁLISIS */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>3. Veredicto del Análisis Técnico</Text>
+              <Text style={styles.sectionTitle}>3. Resultados del Análisis Técnico</Text>
             </View>
             
             <View style={[styles.verdictContainer, isManipulated ? styles.verdictManipulated : styles.verdictAuthentic]}>
@@ -324,21 +325,51 @@ export const CertificadoPDF = ({ data, logoBase64, qrBase64 }: CertificadoPDFPro
 
             <InfoGrid
               data={[
-                { label: "Score ELA (Nivel de Error)", value: `${elaScore.toFixed(2)}%` },
-                { label: "Nivel de Riesgo General", value: riskLevel },
-                { label: "Nivel de Ruido Promedio", value: report.ruidoMedio || "N/A" },
-                { label: "Detección de Objetos", value: report.objetosDetectados || "N/A" },
-                { label: "Análisis Esteganográfico", value: report.esteganografia || "N/A" },
+                { label: "Score ELA (Error Level Analysis)", value: `${elaScore.toFixed(2)}% (Rango normal: 0%-18%)` },
+                { label: "Nivel de Riesgo", value: `${riskLevel} (${elaScore > 50 ? "Supera el umbral de alerta máxima" : elaScore > 18 ? "Supera el umbral de alerta media" : "Dentro del rango de seguridad"})` },
+                { label: "Formato de Archivo", value: report.formato || "No disponible" },
+                { label: "Resolución", value: report.resolucion || "No disponible" },
+                { label: "Dispositivo / Cámara", value: report.camara || "No detectado" },
+                { label: "Software de Edición", value: report.software || "No detectado" },
+                { label: "GPS / Ubicación", value: report.gps || "No disponible" },
+                { label: "Fecha Original de Captura", value: report.fechaOriginal || "No disponible" },
               ]}
             />
           </View>
 
-          {/* HASHES CRIPTOGRÁFICOS */}
+          {/* INTERPRETACIÓN DE RANGOS */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>4. Huellas Digitales (Integridad)</Text>
+              <Text style={styles.sectionTitle}>4. Interpretación del Score ELA</Text>
             </View>
-            <View style={{ backgroundColor: "#f8fafc", padding: 10, border: "1 solid #e2e8f0", borderRadius: 4 }}>
+            <View style={{ backgroundColor: "#f8fafc", padding: 8, border: "1 solid #e2e8f0", borderRadius: 4, marginBottom: 6 }}>
+              <Text style={{ fontSize: 7, color: "#334155", lineHeight: 1.4, marginBottom: 4 }}>
+                <Text style={{fontWeight:"bold"}}>¿Qué es ELA?</Text> El Error Level Analysis analiza los niveles de compresión JPEG en toda la imagen. Si una sección fue editada, su nivel de compresión será diferente al resto, generando un contraste detectable.
+              </Text>
+              <Text style={{ fontSize: 7, color: "#059669", marginBottom: 3 }}>
+                <Text style={{fontWeight:"bold"}}>Rango NORMAL (0% – 18%):</Text> Compresión uniforme. Sin evidencia de manipulación.
+              </Text>
+              <Text style={{ fontSize: 7, color: "#d97706", marginBottom: 3 }}>
+                <Text style={{fontWeight:"bold"}}>Rango SOSPECHOSO (18% – 50%):</Text> Variaciones moderadas. Posibles ediciones locales.
+              </Text>
+              <Text style={{ fontSize: 7, color: "#dc2626", marginBottom: 4 }}>
+                <Text style={{fontWeight:"bold"}}>Rango ALTERADO (50% – 100%):</Text> Alta probabilidad de manipulación o ensamblaje.
+              </Text>
+              <Text style={{ fontSize: 7, color: "#334155", lineHeight: 1.4 }}>
+                <Text style={{fontWeight:"bold"}}>Resultado de este análisis:</Text> La imagen obtuvo un score ELA de {elaScore.toFixed(2)}%, lo que corresponde a un nivel de riesgo <Text style={{fontWeight:"bold"}}>{riskLevel}</Text>. {elaScore > 50 ? "Este valor supera el umbral de alerta máxima y es un indicador contundente de alteración digital." : elaScore > 18 ? "Este valor supera el umbral de alerta media, lo que sugiere que la imagen pudo haber sido editada o guardada múltiples veces." : "Este valor se encuentra dentro del rango de seguridad, indicando que la compresión es consistente en toda la imagen."}
+              </Text>
+            </View>
+          </View>
+
+          {/* HASHES CRIPTOGRÁFICOS Y PERCEPTUALES */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>5. Huellas Digitales (Integridad del Archivo)</Text>
+            </View>
+            <View style={{ backgroundColor: "#f8fafc", padding: 8, border: "1 solid #e2e8f0", borderRadius: 4, marginBottom: 4 }}>
+              <Text style={{ fontSize: 7, color: "#64748b", marginBottom: 4 }}>
+                Los hashes criptográficos son firmas digitales únicas. Si la imagen se modifica aunque sea un solo píxel, estos códigos cambian completamente.
+              </Text>
               <Text style={{ fontSize: 8, color: "#64748b", fontFamily: "Courier", marginBottom: 3 }}><Text style={{fontWeight:"bold", color:"#0f172a"}}>MD5:</Text> {hashes.md5 || "N/A"}</Text>
               <Text style={{ fontSize: 8, color: "#64748b", fontFamily: "Courier", marginBottom: 3 }}><Text style={{fontWeight:"bold", color:"#0f172a"}}>SHA-1:</Text> {hashes.sha1 || "N/A"}</Text>
               <Text style={{ fontSize: 8, color: "#64748b", fontFamily: "Courier" }}><Text style={{fontWeight:"bold", color:"#0f172a"}}>SHA-256:</Text> {hashes.sha256 || "N/A"}</Text>
@@ -348,11 +379,17 @@ export const CertificadoPDF = ({ data, logoBase64, qrBase64 }: CertificadoPDFPro
           {/* DICTAMEN FINAL */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>5. Resumen del Dictamen Pericial</Text>
+              <Text style={styles.sectionTitle}>6. Dictamen Forense</Text>
             </View>
             <Text style={styles.summaryText}>
               {data.analysis.forensicReport?.resumen || "No hay resumen disponible."}
             </Text>
+            <View style={{ backgroundColor: "#f1f5f9", padding: 8, border: "1 solid #e2e8f0", borderRadius: 4, marginTop: 6 }}>
+              <Text style={{ fontSize: 7, color: "#475569", lineHeight: 1.4 }}>
+                <Text style={{fontWeight:"bold"}}>Recomendación: </Text>
+                {data.analysis.forensicReport?.recomendacion || "Basado exclusivamente en los análisis automatizados del sistema."}
+              </Text>
+            </View>
           </View>
         </View>
 

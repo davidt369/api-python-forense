@@ -48,11 +48,58 @@ export async function POST(
       data: { status: "REVISANDO" },
     });
 
-    // Extraer el filename de la ruta de imagen almacenada (que ahora es una URL absoluta)
-    // evidence.imagePath será algo como "http://backend/uploads/evidencias/user/archivo.jpg"
-    const filename = evidence.imagePath.includes("/uploads/") 
-      ? evidence.imagePath.split("/uploads/")[1] 
-      : evidence.imagePath;
+    // Usar la ruta del backend guardada en hash para el análisis
+    // Si no hay ruta de backend, subir el archivo local al backend primero
+    let filename = evidence.hash;
+    
+    if (!filename) {
+      // Intentar subir el archivo local al backend para análisis
+      const baseUrl = process.env.NODE_ENV === "production"
+        ? "https://api-python-forense.onrender.com"
+        : (process.env.NEXT_PUBLIC_FORENSIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000");
+      const UPLOAD_API_URL = `${baseUrl}/upload`;
+      
+      try {
+        // Leer el archivo local desde public/
+        const localPath = path.join(process.cwd(), 'public', evidence.imagePath.replace(/^\//, ''));
+        const fileBuffer = await readFile(localPath);
+        
+        // Crear un blob y subirlo al backend
+        const uploadFormData = new FormData();
+        const blob = new Blob([fileBuffer]);
+        uploadFormData.append("file", blob, evidence.originalName);
+        uploadFormData.append("folder", `evidencias/${evidence.userId}`);
+        
+        const uploadRes = await fetch(UPLOAD_API_URL, {
+          method: "POST",
+          body: uploadFormData,
+        });
+        
+        if (uploadRes.ok) {
+          const uploadData = await uploadRes.json();
+          filename = uploadData.filename;
+          // Guardar la ruta del backend para futuros análisis
+          await prisma.evidence.update({
+            where: { id },
+            data: { hash: filename },
+          });
+        }
+      } catch (err) {
+        console.error("Error al subir archivo local al backend:", err);
+        return NextResponse.json(
+          { error: "No se pudo enviar la imagen al servidor de análisis forense." },
+          { status: 500 }
+        );
+      }
+    }
+
+    // Verificar que tengamos un filename antes de continuar
+    if (!filename) {
+      return NextResponse.json(
+        { error: "No se pudo obtener la ruta de la imagen para el análisis. Verifica que el backend esté disponible." },
+        { status: 500 }
+      );
+    }
 
     // Llamar a la API forense externa
     const formData = new FormData();
@@ -130,7 +177,7 @@ export async function POST(
 
 function generarDictamen(result: any, evidence: any): string {
   const manipulacion = result.ela?.possible_manipulation || false;
-  const score = result.ela?.score || 0; // Ahora viene como porcentaje de 0 a 100
+  const score = result.ela?.score || 0;
   const nivelRiesgo = score > 50 ? "ALTO" : score > 18 ? "MEDIO" : "BAJO";
 
   const detallesCamara = result.exif?.camera;
@@ -138,9 +185,19 @@ function generarDictamen(result: any, evidence: any): string {
   const tieneGPS = result.exif?.gps?.latitude;
   const tieneSoftware = result.exif?.software?.software || result.exif?.software?.creator_tool;
 
+  const riskInterpretation = score > 50 
+    ? "ALTA probabilidad de manipulación" 
+    : score > 18 
+    ? "MEDIA probabilidad de manipulación" 
+    : "BAJA probabilidad de manipulación";
+
   const resumenManipulacion = manipulacion
-    ? `El análisis ELA (Error Level Analysis) reveló un score de ${score.toFixed(2)}%, superando el umbral normal, lo que sugiere POSIBLE MANIPULACIÓN en la imagen. Se detectaron anomalías en los patrones de compresión que indican posibles alteraciones en áreas específicas de la imagen.`
-    : `El análisis ELA (Error Level Analysis) muestra un score de ${score.toFixed(2)}%, dentro del rango normal, lo que indica que la imagen NO PRESENTA EVIDENCIAS de manipulación. Los patrones de compresión son consistentes en toda la imagen.`;
+    ? `El análisis ELA (Error Level Analysis) reveló un score de ${score.toFixed(2)}%, superando el umbral del 18% considerado normal. Este resultado indica POSIBLE MANIPULACIÓN en la imagen. Se detectaron anomalías en los patrones de compresión que son consistentes con alteraciones en áreas específicas de la imagen. Nivel de riesgo: ${riskInterpretation}.`
+    : `El análisis ELA (Error Level Analysis) muestra un score de ${score.toFixed(2)}%, dentro del rango normal (0% - 18%). Esto indica que la imagen NO PRESENTA EVIDENCIAS de manipulación. Los patrones de compresión son consistentes en toda la imagen. Nivel de riesgo: ${riskInterpretation}.`;
+
+  const recomendacionTexto = manipulacion
+    ? `La imagen presenta un score ELA de ${score.toFixed(2)}%, superando el umbral de alerta del 18%. Basado exclusivamente en el análisis automatizado del sistema (ELA, metadatos EXIF, histograma, detección de objetos y esteganografía), se concluye que existen indicios técnicos de alteración digital. Se recomienda revisar los detalles técnicos en las secciones correspondientes de este informe para comprender las anomalías detectadas.`
+    : `La imagen presenta un score ELA de ${score.toFixed(2)}%, dentro del rango de seguridad (0% - 18%). Basado exclusivamente en el análisis automatizado del sistema (ELA, metadatos EXIF, histograma, detección de objetos y esteganografía), la imagen se considera APARENTEMENTE AUTÉNTICA. Todos los patrones de compresión y metadatos analizados son consistentes con una imagen no alterada.`;
 
   return JSON.stringify({
     veredicto: manipulacion
@@ -150,10 +207,22 @@ function generarDictamen(result: any, evidence: any): string {
     scoreELA: score,
     fechaAnalisis: new Date().toISOString(),
     analista: "Sistema Automatizado",
+    interpretacionRiesgo: riskInterpretation,
     resumen: resumenManipulacion,
-    recomendacion: manipulacion
-      ? "Se recomienda realizar un análisis más profundo con herramientas forenses avanzadas. La imagen debe tratarse como evidencia comprometida hasta que se complete la investigación adicional."
-      : "La imagen puede considerarse como evidencia válida para propósitos generales. Para casos legales de alta importancia, se recomienda complementar con análisis adicionales.",
+    recomendacion: recomendacionTexto,
+    intervalosConfianza: {
+      ela: {
+        score: `${score.toFixed(2)}%`,
+        umbralNormal: "0% - 18%",
+        umbralMedio: "18% - 50%",
+        umbralAlto: "50% - 100%",
+        interpretacion: nivelRiesgo === "BAJO" 
+          ? "La imagen se encuentra en el rango de seguridad. No hay evidencia de manipulación detectada por ELA."
+          : nivelRiesgo === "MEDIO"
+          ? "La imagen presenta anomalías moderadas. Podría haber sido editada o guardada múltiples veces."
+          : "La imagen presenta un score elevado. Alta probabilidad de manipulación o ensamblaje de múltiples fuentes.",
+      },
+    },
     detalles: {
       nombreArchivo: evidence.originalName,
       resolucion: result.exif?.file?.image_width && result.exif?.file?.image_height

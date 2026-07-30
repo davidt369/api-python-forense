@@ -6,7 +6,6 @@ import { prisma } from "@/app/lib/prisma";
 import { getServerUser } from "@/app/lib/auth";
 import { redirect } from "next/navigation";
 import {
-  FileText,
   FolderSearch,
   PlusCircle,
   Clock,
@@ -16,6 +15,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { Card, CardContent } from "@/app/components/ui/card";
+import EvidenceImage from "@/components/EvidenceImage";
 
 export default async function DashboardPage() {
   const user = await getServerUser();
@@ -189,11 +189,17 @@ export default async function DashboardPage() {
                       key={evidence.id}
                       className="hover:bg-muted/30 transition-colors"
                     >
-                      <td className="px-4 py-3 flex items-center gap-2 font-medium">
-                        <FileText className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                        <span className="truncate max-w-[200px]">
-                          {evidence.originalName}
-                        </span>
+                      <td className="px-4 py-3 font-medium">
+                        <div className="flex items-center gap-3">
+                          <EvidenceImage
+                          src={evidence.imagePath}
+                          alt={evidence.originalName}
+                          thumbnail
+                        />
+                          <span className="truncate max-w-[200px]">
+                            {evidence.originalName}
+                          </span>
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">
                         {new Date(evidence.createdAt).toLocaleDateString(

@@ -331,8 +331,9 @@ export default function LandingPage() {
               <Image src="/logo/logo-afd.png" alt="AFD Logo" width={24} height={24} className="w-6 h-6 object-contain grayscale opacity-70" />
               <span className="font-semibold text-muted-foreground">Agencia de Análisis Forense Digital</span>
             </div>
-            <div className="text-sm text-muted-foreground font-medium">
-              © {new Date().getFullYear()} Cochabamba, Bolivia. Todos los derechos reservados.
+            <div className="flex gap-6 text-sm text-muted-foreground">
+              <Link href="/metodologia" className="hover:text-foreground transition-colors font-medium">Metodología</Link>
+              <span>© {new Date().getFullYear()} Cochabamba, Bolivia</span>
             </div>
           </div>
         </div>

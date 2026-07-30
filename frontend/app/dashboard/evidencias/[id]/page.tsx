@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import Link from "next/link";
 import MapViewDynamic from "@/components/MapViewDynamic";
+import EvidenceImage from "@/components/EvidenceImage";
 
 export default function EvidenceDetailPage() {
   const { id } = useParams();
@@ -121,9 +122,10 @@ export default function EvidenceDetailPage() {
                 {evidence.imagePath ? (
                   <div className="bg-muted rounded-xl overflow-hidden flex items-center justify-center p-4">
                     <img
-                      src={evidence.imagePath?.replace("http://localhost:8000", process.env.NODE_ENV === "production" ? "https://api-python-forense.onrender.com" : (process.env.NEXT_PUBLIC_FORENSIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000"))}
+                      src={evidence.imagePath || '/placeholder-image.svg'}
                       alt={evidence.originalName}
                       className="max-h-[400px] object-contain rounded-lg"
+                      onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-image.svg'; }}
                     />
                   </div>
                 ) : (

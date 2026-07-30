@@ -14,6 +14,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/evidencias", label: "Evidencias", icon: FileText },
+  { href: "/admin/analisis", label: "Análisis Forenses", icon: FileText },
   { href: "/admin/usuarios", label: "Usuarios", icon: Users },
 ];
 
