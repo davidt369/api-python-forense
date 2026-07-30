@@ -76,7 +76,7 @@ export function HeroSection({ user, dashboardPath }: { user: any; dashboardPath:
             <motion.div variants={itemVariants} className="pt-6 border-t border-border grid grid-cols-3 gap-4 sm:gap-6">
               <div>
                 <div className="text-2xl sm:text-3xl font-bold text-foreground font-mono tracking-tight">100%</div>
-                <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mt-1">Validez Ley 1173</div>
+                <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mt-1">Validez Legal</div>
               </div>
               <div>
                 <div className="text-2xl sm:text-3xl font-bold text-primary font-mono tracking-tight">&lt; 0.05s</div>

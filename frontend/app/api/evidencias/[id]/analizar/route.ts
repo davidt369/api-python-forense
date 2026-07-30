@@ -233,6 +233,6 @@ function generarDictamen(result: any, evidence: any): string {
       wHash: result.hashes?.perceptual?.whash || "",
     },
     agencia: "Agencia de Análisis Forense Digital",
-    ubicacion: "Cochabamba, Bolivia",
+    ubicacion: "Cochabamba",
   });
 }

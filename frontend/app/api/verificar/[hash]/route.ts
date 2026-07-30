@@ -44,7 +44,7 @@ export async function GET(
         hash: certificate.certificateHash,
         generado: certificate.generatedAt,
         emitidoPor: "Agencia de Análisis Forense Digital",
-        ubicacion: "Cochabamba, Bolivia",
+        ubicacion: "Cochabamba",
         evidencia: {
           estado: certificate.evidence.status,
           solicitud: certificate.evidence.createdAt,
@@ -68,7 +68,7 @@ export async function GET(
         pdfPath: certificate.pdfPath,
         generado: certificate.generatedAt,
         emitidoPor: "Agencia de Análisis Forense Digital",
-        ubicacion: "Cochabamba, Bolivia",
+        ubicacion: "Cochabamba",
         analista: certificate.author.name,
       },
       evidencia: {

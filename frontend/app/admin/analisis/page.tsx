@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { FileSearch, ArrowRight, Shield, AlertTriangle, CheckCircle2 } from "lucide-react";
-import PortalLayout from "@/app/components/PortalLayout";
 import { Badge } from "@/app/components/ui/badge";
 import { Button } from "@/app/components/ui/button";
 
@@ -31,7 +30,7 @@ export default function AnalisisPage() {
   }, []);
 
   return (
-    <PortalLayout>
+    <>
       <div className="bg-card border border-border rounded-xl shadow-sm p-5 md:p-6 mb-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div>
@@ -109,6 +108,6 @@ export default function AnalisisPage() {
           </div>
         )}
       </div>
-    </PortalLayout>
+    </>
   );
 }

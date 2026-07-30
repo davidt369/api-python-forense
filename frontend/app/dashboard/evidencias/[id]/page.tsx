@@ -20,6 +20,7 @@ import {
 import Link from "next/link";
 import MapViewDynamic from "@/components/MapViewDynamic";
 import EvidenceImage from "@/components/EvidenceImage";
+import { Skeleton } from "boneyard-js/react";
 
 export default function EvidenceDetailPage() {
   const { id } = useParams();
@@ -74,9 +75,9 @@ export default function EvidenceDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
+      <Skeleton name="evidence-detail" loading={true}>
+        <div />
+      </Skeleton>
     );
   }
 
@@ -95,6 +96,7 @@ export default function EvidenceDetailPage() {
     : null;
 
   return (
+    <Skeleton name="evidence-detail" loading={false}>
     <div className="min-h-screen bg-background">
       <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -492,5 +494,6 @@ export default function EvidenceDetailPage() {
         </Dialog>
       )}
     </div>
+    </Skeleton>
   );
 }

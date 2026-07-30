@@ -1,5 +1,5 @@
 // Schema for Agencia de Análisis Forense Digital
-// Cochabamba, Bolivia
+// Cochabamba
 
 generator client {
   provider = "prisma-client-js"

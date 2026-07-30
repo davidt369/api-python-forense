@@ -104,7 +104,7 @@ export default function VerifyCertificatePage() {
               </div>
               <div className="bg-muted/50 p-4 rounded-xl">
                 <p className="text-xs text-muted-foreground">Ubicación</p>
-                <p className="font-medium">Cochabamba, Bolivia</p>
+                <p className="font-medium">Cochabamba</p>
               </div>
               <div className="bg-muted/50 p-4 rounded-xl">
                 <p className="text-xs text-muted-foreground">Hash del Certificado</p>

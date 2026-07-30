@@ -81,7 +81,7 @@ export default function LandingPage() {
       <footer className="border-t border-border bg-muted/50 py-12 text-center relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <p className="text-muted-foreground text-sm font-medium">
-            &copy; {new Date().getFullYear()} Agencia Forense Digital Bolivia. Todos los derechos reservados.
+            &copy; {new Date().getFullYear()} Agencia Forense Digital. Todos los derechos reservados.
           </p>
           <div className="flex justify-center gap-6 mt-6">
             <a href="#" className="text-muted-foreground hover:text-primary text-sm font-medium transition-colors">Términos de Servicio</a>

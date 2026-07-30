@@ -1,0 +1,7 @@
+{
+  "breakpoints": [375, 768, 1280],
+  "out": "./bones",
+  "wait": 800,
+  "routes": ["/dashboard", "/dashboard/nueva-solicitud"],
+  "resolveEnvVars": true
+}

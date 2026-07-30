@@ -37,7 +37,14 @@ def analyze_compression(filepath: Path) -> dict:
             result["compression"]["optimize"] = bool(image.info.get("optimize", False))
             result["compression"]["jfif"] = image.info.get("jfif")
             result["compression"]["jfif_version"] = image.info.get("jfif_version")
-            result["compression"]["dpi"] = image.info.get("dpi")
+            dpi = image.info.get("dpi")
+            if dpi:
+                try:
+                    result["compression"]["dpi"] = tuple(float(x) for x in dpi)
+                except Exception:
+                    result["compression"]["dpi"] = str(dpi)
+            else:
+                result["compression"]["dpi"] = None
             result["compression"]["subsampling"] = (
                 image.layer if hasattr(image, "layer") else None
             )

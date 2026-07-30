@@ -8,6 +8,19 @@ import os
 import gc
 import tempfile
 from fastapi.staticfiles import StaticFiles
+from PIL.TiffTags import IFDRational
+
+def sanitize_for_json(obj):
+    if isinstance(obj, IFDRational):
+        return float(obj) if obj.denominator != 0 else 0.0
+    elif isinstance(obj, dict):
+        return {k: sanitize_for_json(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [sanitize_for_json(v) for v in obj]
+    elif isinstance(obj, tuple):
+        return tuple(sanitize_for_json(v) for v in obj)
+    return obj
+
 
 from app.services.exif import analyze_exif
 from app.services.hashes import analyze_hashes
@@ -155,6 +168,7 @@ async def analyze_image(filename: str = Form(...), original_name: str = Form(...
 
     try:
         result = _run_analysis(filepath, original_name, filename)
+        result = sanitize_for_json(result)
         print("[DONE] Análisis completado.")
         return JSONResponse(result)
     except Exception as e:
@@ -194,6 +208,7 @@ async def analyze_file_direct(
 
         print(f"[REQ] Análisis directo: {name}")
         result = _run_analysis(tmp_path, name, tmp_path.name)
+        result = sanitize_for_json(result)
         print("[DONE] Análisis directo completado.")
         return JSONResponse(result)
 

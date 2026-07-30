@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { Card, CardContent } from "@/app/components/ui/card";
 import EvidenceImage from "@/components/EvidenceImage";
+import { Skeleton } from "boneyard-js/react";
+import { MagicCard } from "@/components/ui/magic-card";
 
 export default async function DashboardPage() {
   const user = await getServerUser();
@@ -69,6 +71,7 @@ export default async function DashboardPage() {
 
   return (
     <PortalLayout>
+      <Skeleton name="dashboard-main" loading={false}>
       <div className="space-y-6 animate-fade-in">
         {/* Bienvenida */}
         <div>
@@ -114,25 +117,25 @@ export default async function DashboardPage() {
           ].map((stat) => {
             const Icon = stat.icon;
             return (
-              <Card key={stat.label}>
-                <CardContent className="p-4 sm:p-5">
+              <MagicCard key={stat.label} gradientColor="rgba(var(--primary), 0.1)" className="rounded-xl border border-border bg-card">
+                <div className="p-4 sm:p-5">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
                         {stat.label}
                       </p>
-                      <p className="text-2xl sm:text-3xl font-bold mt-1">
+                      <p className="text-2xl sm:text-3xl font-extrabold mt-1 text-foreground">
                         {stat.value}
                       </p>
                     </div>
                     <div
-                      className={`${stat.bg} p-3 rounded-xl ${stat.color}`}
+                      className={`${stat.bg} p-3 rounded-xl ${stat.color} shadow-sm`}
                     >
                       <Icon className="w-5 h-5" />
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </MagicCard>
             );
           })}
         </div>
@@ -152,64 +155,64 @@ export default async function DashboardPage() {
           </div>
 
           {evidencias.length === 0 ? (
-            <div className="text-center py-16 px-4 bg-muted/20 rounded-lg border border-dashed border-border mt-4 flex flex-col items-center justify-center gap-4">
-              <div className="p-4 bg-primary/10 rounded-full text-primary mb-2">
+            <div className="text-center py-16 px-4 bg-muted/20 rounded-xl border border-dashed border-border mt-4 flex flex-col items-center justify-center gap-4 transition-all hover:bg-muted/30">
+              <div className="p-4 bg-primary/10 rounded-full text-primary mb-2 shadow-sm animate-pulse">
                 <FolderSearch className="w-8 h-8" />
               </div>
               <div>
-                <h3 className="font-medium text-base mb-1">
+                <h3 className="font-bold text-lg mb-1 text-foreground">
                   No tienes solicitudes pendientes
                 </h3>
-                <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
+                <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6 leading-relaxed">
                   Aún no has enviado ninguna evidencia digital para análisis.
                   Crea tu primera solicitud para comenzar.
                 </p>
               </div>
               <Link href="/dashboard/nueva-solicitud">
-                <Button>
+                <Button className="shadow-lg shadow-primary/20">
                   <PlusCircle className="w-4 h-4 mr-2" />
                   Crear primera solicitud
                 </Button>
               </Link>
             </div>
           ) : (
-            <div className="overflow-x-auto w-full max-w-full rounded-lg border border-border mt-4">
+            <div className="overflow-x-auto w-full max-w-full rounded-xl border border-border mt-4 shadow-sm">
               <table className="w-full text-left text-sm whitespace-nowrap">
-                <thead className="bg-muted/50 border-b border-border text-muted-foreground">
+                <thead className="bg-muted/80 backdrop-blur-md border-b border-border text-muted-foreground uppercase text-[11px] font-bold tracking-wider">
                   <tr>
-                    <th className="px-4 py-3 font-medium">Evidencia</th>
-                    <th className="px-4 py-3 font-medium">Fecha</th>
-                    <th className="px-4 py-3 font-medium">Estado</th>
-                    <th className="px-4 py-3 font-medium text-right">Acción</th>
+                    <th className="px-5 py-4">Evidencia</th>
+                    <th className="px-5 py-4">Fecha</th>
+                    <th className="px-5 py-4">Estado</th>
+                    <th className="px-5 py-4 text-right">Acción</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border">
+                <tbody className="divide-y divide-border bg-card">
                   {evidencias.map((evidence: any) => (
                     <tr
                       key={evidence.id}
-                      className="hover:bg-muted/30 transition-colors"
+                      className="hover:bg-muted/50 transition-colors group"
                     >
-                      <td className="px-4 py-3 font-medium">
-                        <div className="flex items-center gap-3">
+                      <td className="px-5 py-4 font-medium">
+                        <div className="flex items-center gap-4">
                           <EvidenceImage
                           src={evidence.imagePath}
                           alt={evidence.originalName}
                           thumbnail
                         />
-                          <span className="truncate max-w-[200px]">
+                          <span className="truncate max-w-[200px] text-foreground font-semibold group-hover:text-primary transition-colors">
                             {evidence.originalName}
                           </span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground">
+                      <td className="px-5 py-4 text-muted-foreground font-medium">
                         {new Date(evidence.createdAt).toLocaleDateString(
                           "es-BO"
                         )}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-5 py-4">
                         {getStatusBadge(evidence.status)}
                       </td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-5 py-4 text-right">
                         {evidence.status === "PENDIENTE" ? (
                           <Link href={`/dashboard/pagar/${evidence.id}`}>
                             <Button size="sm">
@@ -239,6 +242,7 @@ export default async function DashboardPage() {
           )}
         </div>
       </div>
+      </Skeleton>
     </PortalLayout>
   );
 }

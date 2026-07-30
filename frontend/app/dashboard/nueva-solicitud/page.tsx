@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import PortalLayout from "@/app/components/PortalLayout";
 import { Button } from "@/app/components/ui/button";
+import { Skeleton } from "boneyard-js/react";
 
 export default function NuevaSolicitud() {
   const router = useRouter();
@@ -89,8 +90,9 @@ export default function NuevaSolicitud() {
 
   return (
     <PortalLayout>
+      <Skeleton name="nueva-solicitud-main" loading={false}>
       <div className="bg-card border border-border rounded-xl p-5 shadow-sm max-w-2xl">
-        <h2 className="text-lg font-bold mb-2">Nueva solicitud de análisis</h2>
+        <h2 className="text-lg font-bold mb-2 text-foreground">Nueva solicitud de análisis</h2>
         <p className="text-sm text-muted-foreground mb-6">Sube la evidencia digital para iniciar el proceso de peritaje. Se requiere el archivo original sin alteraciones posteriores al incidente.</p>
         
         {error && (
@@ -171,6 +173,7 @@ export default function NuevaSolicitud() {
           </div>
         </form>
       </div>
+      </Skeleton>
     </PortalLayout>
   );
 }

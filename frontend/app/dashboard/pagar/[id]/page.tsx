@@ -130,7 +130,7 @@ export default function PagoPage() {
               <div className="relative w-56 h-56 bg-white border-2 border-slate-200 rounded-xl p-3 flex items-center justify-center shadow-sm">
                 <Image src="/qr-pago/qr-pago.png" alt="QR de Pago" width={224} height={224} className="w-full h-full object-contain rounded-lg" />
               </div>
-              <p className="text-xs text-muted-foreground mt-4 text-center">QR estático · Banco Unión · Cuenta AFD Bolivia</p>
+              <p className="text-xs text-muted-foreground mt-4 text-center">QR estático · Banco Unión · Cuenta AFD</p>
             </CardContent>
           </Card>
 

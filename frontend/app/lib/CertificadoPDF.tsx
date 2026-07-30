@@ -423,7 +423,7 @@ export const CertificadoPDF = ({ data, logoBase64, qrBase64 }: CertificadoPDFPro
 
           <View style={styles.footerBar}>
             <View>
-              <Text style={styles.footerText}>© {new Date().getFullYear()} Agencia de Análisis Forense Digital - Bolivia</Text>
+              <Text style={styles.footerText}>© {new Date().getFullYear()} Agencia de Análisis Forense Digital</Text>
               <Text style={styles.footerText}>Documento generado automáticamente por sistema.</Text>
             </View>
             <View style={{ alignItems: "flex-end" }}>

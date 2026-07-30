@@ -6,7 +6,7 @@ import { Badge } from "@/app/components/ui/badge";
 
 export function LegalFramework() {
   return (
-    <section id="ley-1173" className="py-20 bg-muted/30 border-y border-border relative overflow-hidden">
+    <section id="validez-legal" className="py-20 bg-muted/30 border-y border-border relative overflow-hidden">
       {/* Decorative gradient */}
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
       
@@ -22,12 +22,12 @@ export function LegalFramework() {
           >
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/50 border border-border text-[11px] font-mono text-foreground font-bold tracking-wider">
               <Scale className="w-3.5 h-3.5" />
-              VALIDEZ JURÍDICA EN BOLIVIA Y SUDAMÉRICA
+              VALIDEZ JURÍDICA INTERNACIONAL
             </div>
 
             <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight leading-tight">
               Acreditado Bajo la <br />
-              <span className="text-primary">Ley 1173 de Bolivia</span>
+              <span className="text-primary">Normativa Legal Vigente</span>
             </h2>
 
             <p className="text-muted-foreground text-base leading-relaxed">
@@ -72,12 +72,12 @@ export function LegalFramework() {
                     <Building2 className="w-6 h-6 text-muted-foreground" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-foreground uppercase tracking-tight">Agencia Forense Digital Bolivia</h4>
+                    <h4 className="font-bold text-foreground uppercase tracking-tight">Agencia Forense Digital</h4>
                     <p className="text-[11px] text-muted-foreground uppercase tracking-wider mt-0.5">Cochabamba &bull; Cobertura Nacional</p>
                   </div>
                 </div>
                 <Badge variant="info" className="px-3 py-1.5 rounded-md bg-primary/10 text-primary font-mono text-[10px] font-bold tracking-widest border-primary/20">
-                  REG-2026-BOL
+                  REG-2026-INT
                 </Badge>
               </div>
 

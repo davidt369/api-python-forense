@@ -74,7 +74,7 @@ export function Navbar() {
           </div>
 
           <div className="hidden lg:flex items-center gap-8 text-[13px] font-bold tracking-wide uppercase text-muted-foreground">
-            {["Demostración Live", "Validar Hash", "Metodología", "Ley 1173", "Tarifas"].map((item, idx) => (
+            {["Demostración Live", "Validar Hash", "Metodología", "Tarifas"].map((item, idx) => (
               <a
                 key={idx}
                 href={`#${item.toLowerCase().replace(/ /g, "-").replace(/ó/g, "o")}`}
@@ -146,7 +146,7 @@ export function Navbar() {
             exit={{ opacity: 0, y: -20 }}
             className="fixed top-20 left-0 w-full lg:hidden border-b border-border bg-white/95 dark:bg-[#070b14]/95 backdrop-blur-2xl px-6 py-6 flex flex-col gap-4 shadow-2xl z-40"
           >
-            {["Demostración Live", "Validar Hash", "Metodología", "Ley 1173", "Tarifas"].map((item, idx) => (
+            {["Demostración Live", "Validar Hash", "Metodología", "Tarifas"].map((item, idx) => (
               <a
                 key={idx}
                 href={`#${item.toLowerCase().replace(/ /g, "-").replace(/ó/g, "o")}`}

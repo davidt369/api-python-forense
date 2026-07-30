@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { FileBadge, Download, Eye, QrCode } from "lucide-react";
-import PortalLayout from "@/app/components/PortalLayout";
 import { Button } from "@/app/components/ui/button";
 import {
   Dialog,
@@ -37,7 +36,7 @@ export default function CertificadosPage() {
   }, []);
 
   return (
-    <PortalLayout>
+    <>
       <div className="bg-card border border-border rounded-xl shadow-sm p-5 md:p-6 mb-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div>
@@ -121,6 +120,6 @@ export default function CertificadosPage() {
           </div>
         </DialogContent>
       </Dialog>
-    </PortalLayout>
+    </>
   );
 }

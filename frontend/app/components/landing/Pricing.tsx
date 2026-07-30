@@ -90,7 +90,7 @@ export function Pricing() {
 
               <div className="relative z-10 mt-2">
                 <h3 className="text-lg font-bold text-primary mb-2 uppercase tracking-tight">Dictamen Pericial</h3>
-                <p className="text-[13px] text-muted-foreground mb-6">Para presentación de evidencia en procesos judiciales (Ley 1173).</p>
+                <p className="text-[13px] text-muted-foreground mb-6">Para presentación de evidencia en procesos judiciales.</p>
                 <div className="text-3xl font-extrabold text-foreground font-mono mb-4 border-b border-border/50 pb-4">
                   Bs. 250 <span className="text-xs font-sans text-muted-foreground font-normal tracking-wide uppercase">/ documento</span>
                 </div>

@@ -51,7 +51,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
             </div>
             <div>
               <h1 className="text-sm sm:text-base font-bold leading-tight">Agencia de Análisis Forense Digital</h1>
-              <p className="text-xs text-muted-foreground leading-tight">Cochabamba · Bolivia · Demo</p>
+              <p className="text-xs text-muted-foreground leading-tight">Cochabamba · Demo</p>
             </div>
           </div>
           <div className="flex items-center gap-4">

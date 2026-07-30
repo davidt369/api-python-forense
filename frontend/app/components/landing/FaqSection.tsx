@@ -13,8 +13,8 @@ export function FaqSection() {
       a: "Es una técnica forense que permite detectar si una imagen ha sido manipulada (Photoshop, AI) analizando los niveles de compresión JPEG. Las áreas modificadas resaltan como 'anomalías' ya que no comparten el mismo nivel de error que la imagen original."
     },
     {
-      q: "¿Tiene validez legal este certificado en Bolivia?",
-      a: "Sí. Todo el proceso está diseñado en base a la Ley 1173 (Ley de Abreviación Procesal Penal), garantizando la inmutabilidad de la cadena de custodia mediante hashing SHA-256 y sellos de tiempo, haciéndolo apto para peritajes judiciales."
+      q: "¿Tiene validez legal este certificado?",
+      a: "Sí. Todo el proceso está diseñado para garantizar la inmutabilidad de la cadena de custodia mediante hashing SHA-256 y sellos de tiempo, haciéndolo apto para peritajes judiciales."
     },
     {
       q: "¿Por qué el certificado incluye un Código QR?",
