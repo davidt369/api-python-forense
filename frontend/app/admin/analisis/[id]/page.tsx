@@ -458,7 +458,7 @@ export default function AnalysisView() {
                                 {evidence.analysis.elaImagePath ? (
                                   <>
                                     <img
-                                      src={`${(process.env.NEXT_PUBLIC_FORENSIC_API_URL || "").replace(/\/$/, "")}/temp/${evidence.analysis.elaImagePath.split(/[/\\\\]/).pop()}`}
+                                      src={evidence.analysis.elaImagePath.startsWith('http') ? evidence.analysis.elaImagePath : `${(process.env.NEXT_PUBLIC_FORENSIC_API_URL || "").replace(/\/$/, "")}/temp/${evidence.analysis.elaImagePath.split(/[/\\\\]/).pop()}`}
                                       alt="ELA Analysis"
                                       className="w-full h-auto rounded-xl shadow-2xl transition-transform duration-500 group-hover:scale-[1.02]"
                                       onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}

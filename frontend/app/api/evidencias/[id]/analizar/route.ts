@@ -69,30 +69,74 @@ export async function POST(
 
     // Llamar a la API forense externa usando /analyze-file para que analice en memoria
     const ANALYZE_FILE_URL = `${baseUrl}/analyze-file`;
+    
+    // Obtener la URL de respaldo (Fallback) en caso de que el primario falle
+    const fallbackBaseUrl = process.env.NEXT_PUBLIC_FORENSIC_API_URL_FALLBACK?.replace(/\/$/, "");
+    const FALLBACK_URL = fallbackBaseUrl ? `${fallbackBaseUrl}/analyze-file` : null;
+
     const formData = new FormData();
     const blob = new Blob([new Uint8Array(fileBuffer)]);
     formData.append("file", blob, evidence.originalName);
     formData.append("original_name", evidence.originalName);
 
     let forensicResult;
+    let activeBackendUrl = baseUrl;
+    
     try {
+      console.log(`Intentando conectar con backend primario: ${ANALYZE_FILE_URL}`);
       const response = await fetch(ANALYZE_FILE_URL, {
         method: "POST",
         body: formData,
       });
 
       if (!response.ok) {
-        throw new Error(`API forense respondió con estado ${response.status}`);
+        throw new Error(`API forense primaria respondió con estado ${response.status}`);
       }
 
       forensicResult = await response.json();
-      console.log("✅ Respuesta de API forense recibida correctamente");
-    } catch (apiError) {
-      console.error("⚠️ Error al conectar con API forense externa:", apiError);
-      return NextResponse.json(
-        { error: `No se pudo conectar con el servidor de análisis forense. Verifica que la API esté configurada correctamente.` },
-        { status: 503 }
-      );
+      console.log("✅ Respuesta de API forense primaria recibida correctamente");
+    } catch (primaryError) {
+      console.warn("⚠️ Falló el backend primario:", primaryError);
+      
+      if (FALLBACK_URL) {
+        try {
+          console.log(`Intentando conectar con backend de respaldo (fallback): ${FALLBACK_URL}`);
+          // Clonamos el formData para evitar consumirlo dos veces si el entorno lo prohíbe
+          const fallbackFormData = new FormData();
+          fallbackFormData.append("file", blob, evidence.originalName);
+          fallbackFormData.append("original_name", evidence.originalName);
+
+          const fallbackResponse = await fetch(FALLBACK_URL, {
+            method: "POST",
+            body: fallbackFormData,
+          });
+
+          if (!fallbackResponse.ok) {
+             throw new Error(`API forense de respaldo respondió con estado ${fallbackResponse.status}`);
+          }
+
+          forensicResult = await fallbackResponse.json();
+          activeBackendUrl = fallbackBaseUrl || baseUrl;
+          console.log("✅ Respuesta de API forense de respaldo recibida correctamente");
+        } catch (fallbackError) {
+           console.error("❌ Falló también el backend de respaldo:", fallbackError);
+           return NextResponse.json(
+             { error: `Ambos servidores forenses (Principal y Respaldo) están caídos o inaccesibles.` },
+             { status: 503 }
+           );
+        }
+      } else {
+        return NextResponse.json(
+          { error: `No se pudo conectar con el servidor de análisis forense principal y no hay respaldo configurado.` },
+          { status: 503 }
+        );
+      }
+    }
+
+    // Resolver ruta absoluta de la imagen ELA dependiendo del backend usado
+    let finalElaImagePath = forensicResult.ela?.ela_image || null;
+    if (finalElaImagePath && !finalElaImagePath.startsWith('http')) {
+      finalElaImagePath = `${activeBackendUrl}/temp/${finalElaImagePath.split(/[/\\]/).pop()}`;
     }
 
     // Guardar resultado del análisis con el formato real de la API
@@ -102,7 +146,7 @@ export async function POST(
         evidenceId: id,
         elaScore: forensicResult.ela?.score ?? null,
         elaResult: forensicResult.ela?.possible_manipulation ? "POSIBLE_MANIPULACION" : "AUTENTICA",
-        elaImagePath: forensicResult.ela?.ela_image || null,
+        elaImagePath: finalElaImagePath,
         histogramData: JSON.stringify(forensicResult.histogram || {}),
         exifData: JSON.stringify(forensicResult.exif || {}),
         hashesData: JSON.stringify(forensicResult.hashes || {}),
@@ -116,7 +160,7 @@ export async function POST(
       update: {
         elaScore: forensicResult.ela?.score ?? null,
         elaResult: forensicResult.ela?.possible_manipulation ? "POSIBLE_MANIPULACION" : "AUTENTICA",
-        elaImagePath: forensicResult.ela?.ela_image || null,
+        elaImagePath: finalElaImagePath,
         histogramData: JSON.stringify(forensicResult.histogram || {}),
         exifData: JSON.stringify(forensicResult.exif || {}),
         hashesData: JSON.stringify(forensicResult.hashes || {}),
